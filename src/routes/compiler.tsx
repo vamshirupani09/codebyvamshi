@@ -21,7 +21,7 @@ export const Route = createFileRoute("/compiler")({
 function Compiler() {
   const [lang, setLang] = useState<LangId>("python");
   const config = PISTON_LANGUAGES.find((l) => l.id === lang)!;
-  const [code, setCode] = useState(config.starter);
+  const [code, setCode] = useState<string>(config.starter);
   const [stdin, setStdin] = useState("");
   const [output, setOutput] = useState("");
   const [running, setRunning] = useState(false);
