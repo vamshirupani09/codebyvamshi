@@ -14,7 +14,173 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assignment_completions: {
+        Row: {
+          assignment_id: string
+          completed_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          assignment_id: string
+          completed_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          assignment_id?: string
+          completed_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_completions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assignments: {
+        Row: {
+          created_at: string
+          description: string | null
+          difficulty: string | null
+          due_date: string | null
+          id: string
+          problem_url: string
+          title: string
+          week_number: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          due_date?: string | null
+          id?: string
+          problem_url: string
+          title: string
+          week_number?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          due_date?: string | null
+          id?: string
+          problem_url?: string
+          title?: string
+          week_number?: number
+        }
+        Relationships: []
+      }
+      bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          problem_title: string
+          problem_url: string
+          topic: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          problem_title: string
+          problem_url: string
+          topic?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          problem_title?: string
+          problem_url?: string
+          topic?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dsa_progress: {
+        Row: {
+          completed: boolean
+          id: string
+          topic: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          id?: string
+          topic: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          id?: string
+          topic?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          read: boolean
+          title: string
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          read?: boolean
+          title: string
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          read?: boolean
+          title?: string
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
