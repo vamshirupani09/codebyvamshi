@@ -71,21 +71,73 @@ export const RESOURCES = [
 ] as const;
 
 export const PISTON_LANGUAGES = [
-  { id: "python", label: "Python", version: "3.10.0", monaco: "python", starter: 'print("Hello, World!")\n' },
-  { id: "javascript", label: "JavaScript", version: "18.15.0", monaco: "javascript", starter: 'console.log("Hello, World!");\n' },
-  { id: "java", label: "Java", version: "15.0.2", monaco: "java", starter:
-`public class Main {
+  {
+    id: "python",
+    label: "Python",
+    version: "3.10.0",
+    monaco: "python",
+    ext: "py",
+    starter: 'print("Hello, World!")\n',
+  },
+  {
+    id: "javascript",
+    label: "JavaScript",
+    version: "18.15.0",
+    monaco: "javascript",
+    ext: "js",
+    starter: 'console.log("Hello, World!");\n',
+  },
+  {
+    id: "typescript",
+    label: "TypeScript",
+    version: "5.0.3",
+    monaco: "typescript",
+    ext: "ts",
+    starter: 'const greet = (name: string): string => `Hello, ${name}!`;\nconsole.log(greet("World"));\n',
+  },
+  {
+    id: "java",
+    label: "Java",
+    version: "15.0.2",
+    monaco: "java",
+    ext: "java",
+    starter: `public class Main {
   public static void main(String[] args) {
     System.out.println("Hello, World!");
   }
-}\n` },
-  { id: "cpp", label: "C++", version: "10.2.0", monaco: "cpp", starter:
-`#include <iostream>
+}\n`,
+  },
+  {
+    id: "cpp",
+    label: "C++",
+    version: "10.2.0",
+    monaco: "cpp",
+    ext: "cpp",
+    starter: `#include <iostream>
 using namespace std;
 int main() {
   cout << "Hello, World!" << endl;
   return 0;
-}\n` },
+}\n`,
+  },
+  {
+    id: "c",
+    label: "C",
+    version: "10.2.0",
+    monaco: "c",
+    ext: "c",
+    starter: `#include <stdio.h>
+int main(void) {
+  printf("Hello, World!\\n");
+  return 0;
+}\n`,
+  },
 ] as const;
 
 export type LangId = (typeof PISTON_LANGUAGES)[number]["id"];
+
+export const EDITOR_THEMES = [
+  { id: "vs-dark", label: "Dark" },
+  { id: "light", label: "Light" },
+  { id: "hc-black", label: "High Contrast" },
+] as const;

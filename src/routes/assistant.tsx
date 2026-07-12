@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Bot, Bug, FlaskConical, BookOpen, Loader2, Send } from "lucide-react";
+import { Bot, Bug, FlaskConical, BookOpen, Loader2, Send, Gauge, Sparkles, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -19,14 +19,19 @@ export const Route = createFileRoute("/assistant")({
 });
 
 const AGENTS = [
-  { id: "coder", label: "Coder", icon: Bot, hint: "Generate optimized code from a problem statement" },
-  { id: "debugger", label: "Debugger", icon: Bug, hint: "Paste buggy code; get the fix" },
-  { id: "testcase", label: "Tests", icon: FlaskConical, hint: "Generate edge-case test cases" },
-  { id: "explainer", label: "Explainer", icon: BookOpen, hint: "Walk through the code step by step" },
+  { id: "coder", label: "Coder", icon: Bot, hint: "Generate optimized code from a problem statement." },
+  { id: "debugger", label: "Debugger", icon: Bug, hint: "Paste buggy code; get bugs identified and a fix." },
+  { id: "testcase", label: "Tests", icon: FlaskConical, hint: "Generate edge-case test cases as a table." },
+  { id: "explainer", label: "Explainer", icon: BookOpen, hint: "Walk through the code step by step." },
+  { id: "complexity", label: "Complexity", icon: Gauge, hint: "Time & space complexity with derivation." },
+  { id: "optimizer", label: "Optimizer", icon: Sparkles, hint: "Refactor to a cleaner, faster version." },
+  { id: "hint", label: "Hints", icon: Lightbulb, hint: "3 progressive hints — no full solution." },
 ] as const;
 
+type AgentId = (typeof AGENTS)[number]["id"];
+
 function Assistant() {
-  const [agent, setAgent] = useState<typeof AGENTS[number]["id"]>("coder");
+  const [agent, setAgent] = useState<AgentId>("coder");
   const [prompt, setPrompt] = useState("");
   const [context, setContext] = useState("");
   const [output, setOutput] = useState("");
@@ -48,7 +53,8 @@ function Assistant() {
         body: JSON.stringify({ agent, prompt, context }),
       });
       if (!res.ok) {
-        if (res.status === 429) toast.error("Rate limited. Try again in a moment.");
+        if (res.status === 401) toast.error("Please sign in to use the assistant.");
+        else if (res.status === 429) toast.error("Rate limited. Try again in a moment.");
         else if (res.status === 402) toast.error("AI credits exhausted. Add credits in workspace.");
         else toast.error("AI request failed");
         setBusy(false);
@@ -80,12 +86,14 @@ function Assistant() {
           }
         }
       }
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed");
     } finally {
       setBusy(false);
     }
   };
+
+  const current = AGENTS.find((a) => a.id === agent)!;
 
   return (
     <div className="space-y-6">
@@ -94,12 +102,12 @@ function Assistant() {
         <p className="text-sm text-muted-foreground">A team of specialized agents at your service.</p>
       </div>
 
-      <Tabs value={agent} onValueChange={(v) => setAgent(v as typeof agent)}>
-        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+      <Tabs value={agent} onValueChange={(v) => setAgent(v as AgentId)}>
+        <TabsList className="grid grid-cols-4 md:grid-cols-7 w-full">
           {AGENTS.map((a) => (
-            <TabsTrigger key={a.id} value={a.id} className="gap-2">
+            <TabsTrigger key={a.id} value={a.id} className="gap-1.5">
               <a.icon className="size-4" />
-              <span className="hidden sm:inline">{a.label}</span>
+              <span className="hidden md:inline">{a.label}</span>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -122,7 +130,7 @@ function Assistant() {
           </div>
           <Button onClick={ask} disabled={busy} className="w-full">
             {busy ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Send className="size-4 mr-2" />}
-            Ask {AGENTS.find((a) => a.id === agent)!.label}
+            Ask {current.label}
           </Button>
         </Card>
 
