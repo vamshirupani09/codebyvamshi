@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Sparkles, Code2, Bot, Map, CheckCircle2 } from "lucide-react";
+import { Sparkles, Code2, Bot, Map, CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -18,11 +18,39 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-const schema = z.object({
-  email: z.string().trim().email("Invalid email").max(255),
-  password: z.string().min(6, "Min 6 characters").max(72),
+const emailField = z.string().trim().email("Enter a valid email").max(255);
+
+const signInSchema = z.object({
+  email: emailField,
+  password: z.string().min(1, "Password required").max(72),
 });
-type FormData = z.infer<typeof schema>;
+
+const signUpSchema = z
+  .object({
+    email: emailField,
+    password: z
+      .string()
+      .min(8, "At least 8 characters")
+      .max(72, "Max 72 characters")
+      .regex(/[A-Z]/, "Add an uppercase letter")
+      .regex(/[a-z]/, "Add a lowercase letter")
+      .regex(/[0-9]/, "Add a number"),
+    confirm: z.string(),
+  })
+  .refine((v) => v.password === v.confirm, { path: ["confirm"], message: "Passwords don't match" });
+
+type SignInForm = z.infer<typeof signInSchema>;
+type SignUpForm = z.infer<typeof signUpSchema>;
+
+function friendlyAuthError(msg: string): string {
+  const m = msg.toLowerCase();
+  if (m.includes("invalid login")) return "Incorrect email or password.";
+  if (m.includes("email not confirmed")) return "Please verify your email before signing in.";
+  if (m.includes("already registered") || m.includes("already been registered"))
+    return "That email is already registered. Try signing in.";
+  if (m.includes("rate")) return "Too many attempts. Please wait a moment.";
+  return msg;
+}
 
 function Landing() {
   const { user, loading } = useAuth();
@@ -31,31 +59,47 @@ function Landing() {
   const [busy, setBusy] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [showReset, setShowReset] = useState(false);
+  const [showPw, setShowPw] = useState(false);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/dashboard" });
   }, [loading, user, navigate]);
 
-  const form = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: { email: "", password: "" } });
+  const signInForm = useForm<SignInForm>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: { email: "", password: "" },
+  });
+  const signUpForm = useForm<SignUpForm>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: { email: "", password: "", confirm: "" },
+  });
 
-  const onSubmit = async (values: FormData) => {
+  const onSignIn = async (values: SignInForm) => {
     setBusy(true);
     try {
-      if (tab === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email: values.email,
-          password: values.password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
-        });
-        if (error) throw error;
-        toast.success("Account created! Check your email to verify.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword(values);
-        if (error) throw error;
-        toast.success("Welcome back!");
-      }
-    } catch (e: any) {
-      toast.error(e?.message ?? "Auth failed");
+      const { error } = await supabase.auth.signInWithPassword(values);
+      if (error) throw error;
+      toast.success("Welcome back!");
+    } catch (e: unknown) {
+      toast.error(friendlyAuthError(e instanceof Error ? e.message : "Sign-in failed"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onSignUp = async (values: SignUpForm) => {
+    setBusy(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+      });
+      if (error) throw error;
+      if (data.session) toast.success("Account created — you're in!");
+      else toast.success("Account created! Check your email to verify.");
+    } catch (e: unknown) {
+      toast.error(friendlyAuthError(e instanceof Error ? e.message : "Sign-up failed"));
     } finally {
       setBusy(false);
     }
@@ -63,19 +107,27 @@ function Landing() {
 
   const google = async () => {
     setBusy(true);
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/dashboard` });
-    if (r.error) {
-      toast.error(r.error.message ?? "Google sign-in failed");
+    try {
+      const r = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (r.error) {
+        toast.error(r.error.message ?? "Google sign-in failed");
+        setBusy(false);
+      }
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Google sign-in failed");
       setBusy(false);
     }
   };
 
   const reset = async () => {
-    if (!resetEmail) return;
-    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+    const parsed = emailField.safeParse(resetEmail);
+    if (!parsed.success) return toast.error("Enter a valid email");
+    const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    if (error) toast.error(error.message);
+    if (error) toast.error(friendlyAuthError(error.message));
     else {
       toast.success("Reset link sent. Check your email.");
       setShowReset(false);
@@ -97,13 +149,13 @@ function Landing() {
             Code smarter with a team of <em className="text-coral not-italic">AI agents</em>.
           </h1>
           <p className="mt-4 text-muted-foreground text-lg">
-            Practice DSA, run code in Java, Python, C++ and JS, and get instant help from coder, debugger,
-            test-case and explainer agents.
+            Practice DSA, run code in 6 languages, and get instant help from coder, debugger,
+            complexity, optimizer and hint agents.
           </p>
           <ul className="mt-8 space-y-3 text-sm">
             {[
-              { icon: Code2, t: "Online compiler with custom inputs" },
-              { icon: Bot, t: "Multi-agent AI: Coder, Debugger, Tests, Explainer" },
+              { icon: Code2, t: "Online compiler — Python, JS, TS, Java, C, C++" },
+              { icon: Bot, t: "7 AI agents: Coder, Debugger, Tests, Explainer, Complexity, Optimizer, Hints" },
               { icon: Map, t: "Structured DSA roadmap & weekly assignments" },
               { icon: CheckCircle2, t: "Track progress, bookmarks & resources" },
             ].map((f) => (
@@ -140,47 +192,113 @@ function Landing() {
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
-            <TabsContent value="signin" />
-            <TabsContent value="signup" />
-          </Tabs>
 
-          <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" autoComplete="email" {...form.register("email")} />
-              {form.formState.errors.email && (
-                <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label htmlFor="password">Password</Label>
-                {tab === "signin" && (
-                  <button type="button" className="text-xs text-primary hover:underline" onClick={() => setShowReset((s) => !s)}>
-                    Forgot password?
-                  </button>
-                )}
-              </div>
-              <Input id="password" type="password" autoComplete={tab === "signup" ? "new-password" : "current-password"} {...form.register("password")} />
-              {form.formState.errors.password && (
-                <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
-              )}
-            </div>
-
-            {showReset && (
-              <div className="rounded-lg border border-border p-3 bg-secondary/40 space-y-2">
-                <Label className="text-xs">Send reset link to</Label>
-                <div className="flex gap-2">
-                  <Input value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="you@example.com" />
-                  <Button type="button" variant="secondary" onClick={reset}>Send</Button>
+            <TabsContent value="signin" className="mt-6">
+              <form onSubmit={signInForm.handleSubmit(onSignIn)} className="space-y-4" noValidate>
+                <div className="space-y-2">
+                  <Label htmlFor="si-email">Email</Label>
+                  <Input id="si-email" type="email" autoComplete="email" {...signInForm.register("email")} />
+                  {signInForm.formState.errors.email && (
+                    <p className="text-xs text-destructive">{signInForm.formState.errors.email.message}</p>
+                  )}
                 </div>
-              </div>
-            )}
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label htmlFor="si-pw">Password</Label>
+                    <button type="button" className="text-xs text-primary hover:underline" onClick={() => setShowReset((s) => !s)}>
+                      Forgot password?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="si-pw"
+                      type={showPw ? "text" : "password"}
+                      autoComplete="current-password"
+                      {...signInForm.register("password")}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setShowPw((s) => !s)}
+                      aria-label={showPw ? "Hide password" : "Show password"}
+                    >
+                      {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                  {signInForm.formState.errors.password && (
+                    <p className="text-xs text-destructive">{signInForm.formState.errors.password.message}</p>
+                  )}
+                </div>
 
-            <Button type="submit" disabled={busy} className="w-full">
-              {tab === "signup" ? "Create account" : "Sign in"}
-            </Button>
-          </form>
+                {showReset && (
+                  <div className="rounded-lg border border-border p-3 bg-secondary/40 space-y-2">
+                    <Label className="text-xs">Send reset link to</Label>
+                    <div className="flex gap-2">
+                      <Input value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="you@example.com" />
+                      <Button type="button" variant="secondary" onClick={reset}>Send</Button>
+                    </div>
+                  </div>
+                )}
+
+                <Button type="submit" disabled={busy} className="w-full">
+                  {busy && <Loader2 className="size-4 mr-2 animate-spin" />}
+                  Sign in
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="signup" className="mt-6">
+              <form onSubmit={signUpForm.handleSubmit(onSignUp)} className="space-y-4" noValidate>
+                <div className="space-y-2">
+                  <Label htmlFor="su-email">Email</Label>
+                  <Input id="su-email" type="email" autoComplete="email" {...signUpForm.register("email")} />
+                  {signUpForm.formState.errors.email && (
+                    <p className="text-xs text-destructive">{signUpForm.formState.errors.email.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="su-pw">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="su-pw"
+                      type={showPw ? "text" : "password"}
+                      autoComplete="new-password"
+                      {...signUpForm.register("password")}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setShowPw((s) => !s)}
+                      aria-label={showPw ? "Hide password" : "Show password"}
+                    >
+                      {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                  {signUpForm.formState.errors.password ? (
+                    <p className="text-xs text-destructive">{signUpForm.formState.errors.password.message}</p>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground">8+ chars, upper &amp; lower case, a number.</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="su-confirm">Confirm password</Label>
+                  <Input
+                    id="su-confirm"
+                    type={showPw ? "text" : "password"}
+                    autoComplete="new-password"
+                    {...signUpForm.register("confirm")}
+                  />
+                  {signUpForm.formState.errors.confirm && (
+                    <p className="text-xs text-destructive">{signUpForm.formState.errors.confirm.message}</p>
+                  )}
+                </div>
+                <Button type="submit" disabled={busy} className="w-full">
+                  {busy && <Loader2 className="size-4 mr-2 animate-spin" />}
+                  Create account
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
