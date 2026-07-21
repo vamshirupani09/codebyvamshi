@@ -26,6 +26,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { AIMentor } from "@/components/AIMentor";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
