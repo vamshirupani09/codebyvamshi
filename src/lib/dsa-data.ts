@@ -70,11 +70,12 @@ export const RESOURCES = [
   },
 ] as const;
 
+// Judge0 CE (RapidAPI) language IDs
 export const PISTON_LANGUAGES = [
   {
     id: "python",
-    label: "Python",
-    version: "3.10.0",
+    label: "Python 3",
+    judge0: 71,
     monaco: "python",
     ext: "py",
     starter: 'print("Hello, World!")\n',
@@ -82,7 +83,7 @@ export const PISTON_LANGUAGES = [
   {
     id: "javascript",
     label: "JavaScript",
-    version: "18.15.0",
+    judge0: 63,
     monaco: "javascript",
     ext: "js",
     starter: 'console.log("Hello, World!");\n',
@@ -90,7 +91,7 @@ export const PISTON_LANGUAGES = [
   {
     id: "typescript",
     label: "TypeScript",
-    version: "5.0.3",
+    judge0: 74,
     monaco: "typescript",
     ext: "ts",
     starter: 'const greet = (name: string): string => `Hello, ${name}!`;\nconsole.log(greet("World"));\n',
@@ -98,7 +99,7 @@ export const PISTON_LANGUAGES = [
   {
     id: "java",
     label: "Java",
-    version: "15.0.2",
+    judge0: 62,
     monaco: "java",
     ext: "java",
     starter: `public class Main {
@@ -110,7 +111,7 @@ export const PISTON_LANGUAGES = [
   {
     id: "cpp",
     label: "C++",
-    version: "10.2.0",
+    judge0: 54,
     monaco: "cpp",
     ext: "cpp",
     starter: `#include <iostream>
@@ -123,7 +124,7 @@ int main() {
   {
     id: "c",
     label: "C",
-    version: "10.2.0",
+    judge0: 50,
     monaco: "c",
     ext: "c",
     starter: `#include <stdio.h>
@@ -131,6 +132,39 @@ int main(void) {
   printf("Hello, World!\\n");
   return 0;
 }\n`,
+  },
+  {
+    id: "go",
+    label: "Go",
+    judge0: 60,
+    monaco: "go",
+    ext: "go",
+    starter: `package main
+import "fmt"
+func main() { fmt.Println("Hello, World!") }
+`,
+  },
+  {
+    id: "rust",
+    label: "Rust",
+    judge0: 73,
+    monaco: "rust",
+    ext: "rs",
+    starter: `fn main() {
+    println!("Hello, World!");
+}
+`,
+  },
+  {
+    id: "kotlin",
+    label: "Kotlin",
+    judge0: 78,
+    monaco: "kotlin",
+    ext: "kt",
+    starter: `fun main() {
+    println("Hello, World!")
+}
+`,
   },
 ] as const;
 

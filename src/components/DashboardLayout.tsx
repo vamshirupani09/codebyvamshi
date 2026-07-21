@@ -26,6 +26,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { AIMentor } from "@/components/AIMentor";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -184,6 +185,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
 
         <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto">{children}</main>
       </div>
+      <AIMentor />
     </div>
   );
 }
