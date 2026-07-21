@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import Editor from "@monaco-editor/react";
-import { Play, Loader2, Copy, Download, Upload, Maximize2, Minimize2, Square, Check } from "lucide-react";
+import Editor, { type OnMount } from "@monaco-editor/react";
+import { useServerFn } from "@tanstack/react-start";
+import { Play, Loader2, Copy, Download, Upload, Maximize2, Minimize2, Check, Cpu, Timer } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { PISTON_LANGUAGES, EDITOR_THEMES, type LangId } from "@/lib/dsa-data";
+import { runCode } from "@/lib/judge0.functions";
 
 export const Route = createFileRoute("/compiler")({
   component: () => (
@@ -20,14 +22,14 @@ export const Route = createFileRoute("/compiler")({
 
 const STORAGE_KEY = "codex:compiler";
 
-type Persisted = Record<LangId, string>;
+type Persisted = Partial<Record<LangId, string>>;
 
 function loadPersisted(): Persisted {
-  if (typeof window === "undefined") return {} as Persisted;
+  if (typeof window === "undefined") return {};
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
   } catch {
-    return {} as Persisted;
+    return {};
   }
 }
 
@@ -38,23 +40,24 @@ function Compiler() {
   const [stdin, setStdin] = useState("");
   const [stdout, setStdout] = useState("");
   const [stderr, setStderr] = useState("");
+  const [status, setStatus] = useState<string>("");
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState<number | null>(null);
+  const [runtimeTime, setRuntimeTime] = useState<string>("");
+  const [runtimeMem, setRuntimeMem] = useState<string>("");
   const [theme, setTheme] = useState<string>("vs-dark");
   const [fontSize, setFontSize] = useState(14);
   const [fullscreen, setFullscreen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const runFn = useServerFn(runCode);
 
-  // Hydrate saved code once
   useEffect(() => {
     const saved = loadPersisted();
-    if (saved[lang]) setCode(saved[lang]);
+    if (saved[lang]) setCode(saved[lang]!);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Autosave
   useEffect(() => {
     const t = setTimeout(() => {
       const saved = loadPersisted();
@@ -73,56 +76,49 @@ function Compiler() {
     setCode(saved[cfg.id] ?? cfg.starter);
     setStdout("");
     setStderr("");
+    setStatus("");
     setElapsed(null);
+    setRuntimeTime("");
+    setRuntimeMem("");
   };
 
   const run = async () => {
     setRunning(true);
     setStdout("");
     setStderr("");
+    setStatus("");
     setElapsed(null);
-    const ctl = new AbortController();
-    abortRef.current = ctl;
+    setRuntimeTime("");
+    setRuntimeMem("");
     const start = performance.now();
     try {
-      const res = await fetch("https://emkc.org/api/v2/piston/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: ctl.signal,
-        body: JSON.stringify({
-          language: config.id,
-          version: config.version,
-          files: [{ name: `main.${config.ext}`, content: code }],
-          stdin,
-        }),
+      const result = await runFn({
+        data: { language_id: config.judge0, source_code: code, stdin },
       });
-      if (!res.ok) throw new Error(`Runner returned ${res.status}`);
-      const data = await res.json();
       setElapsed(Math.round(performance.now() - start));
-      setStdout(data.run?.stdout ?? "");
+      setStdout(result.stdout);
       const errParts = [
-        data.compile?.stderr ? `[compile]\n${data.compile.stderr}` : "",
-        data.run?.stderr ? `[runtime]\n${data.run.stderr}` : "",
+        result.compile_output ? `[compile]\n${result.compile_output}` : "",
+        result.stderr ? `[runtime]\n${result.stderr}` : "",
+        result.message && !result.stdout && !result.stderr && !result.compile_output
+          ? `[runner]\n${result.message}`
+          : "",
       ].filter(Boolean);
       setStderr(errParts.join("\n\n"));
-      if (data.run?.code !== 0 && data.run?.code != null) {
-        toast.warning(`Exited with code ${data.run.code}`);
+      setStatus(result.status);
+      setRuntimeTime(result.time);
+      setRuntimeMem(result.memory);
+      if (result.statusId !== 3 && result.statusId !== 0) {
+        toast.warning(result.status);
       }
     } catch (e: unknown) {
-      if ((e as { name?: string })?.name === "AbortError") {
-        toast.info("Execution stopped");
-      } else {
-        const msg = e instanceof Error ? e.message : String(e);
-        toast.error("Execution failed");
-        setStderr(msg);
-      }
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(msg);
+      setStderr(msg);
     } finally {
-      abortRef.current = null;
       setRunning(false);
     }
   };
-
-  const stop = () => abortRef.current?.abort();
 
   const copy = async () => {
     await navigator.clipboard.writeText(code);
@@ -147,6 +143,17 @@ function Compiler() {
     reader.readAsText(file);
   };
 
+  const onEditorMount: OnMount = (editor, monaco) => {
+    // Ctrl/Cmd+Enter to run
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      run();
+    });
+    // Ctrl/Cmd+S to save (already autosaved) — noop but stops browser dialog
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+      toast.success("Saved");
+    });
+  };
+
   const editorHeight = fullscreen ? "calc(100vh - 180px)" : "520px";
 
   return (
@@ -154,7 +161,10 @@ function Compiler() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-display text-3xl">Online Compiler</h1>
-          <p className="text-sm text-muted-foreground">Powered by Piston — write, run, iterate.</p>
+          <p className="text-sm text-muted-foreground">
+            9 languages · IntelliSense · <kbd className="px-1 rounded bg-muted text-xs">⌘/Ctrl</kbd>+
+            <kbd className="px-1 rounded bg-muted text-xs">Enter</kbd> to run
+          </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Select value={lang} onValueChange={onLang}>
@@ -181,15 +191,10 @@ function Compiler() {
               ))}
             </SelectContent>
           </Select>
-          {running ? (
-            <Button variant="destructive" onClick={stop}>
-              <Square className="size-4 mr-2" /> Stop
-            </Button>
-          ) : (
-            <Button onClick={run}>
-              <Play className="size-4 mr-2" /> Run
-            </Button>
-          )}
+          <Button onClick={run} disabled={running}>
+            {running ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Play className="size-4 mr-2" />}
+            Run
+          </Button>
         </div>
       </div>
 
@@ -205,7 +210,7 @@ function Compiler() {
                 ref={fileRef}
                 type="file"
                 className="hidden"
-                accept=".py,.js,.ts,.java,.cpp,.c,.txt"
+                accept=".py,.js,.ts,.java,.cpp,.c,.go,.rs,.kt,.txt"
                 onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
               />
               <Button size="icon" variant="ghost" title="Download" onClick={download}>
@@ -225,6 +230,7 @@ function Compiler() {
             value={code}
             onChange={(v) => setCode(v ?? "")}
             theme={theme}
+            onMount={onEditorMount}
             options={{
               minimap: { enabled: false },
               fontSize,
@@ -235,6 +241,9 @@ function Compiler() {
               scrollBeyondLastLine: false,
               suggestOnTriggerCharacters: true,
               quickSuggestions: true,
+              wordBasedSuggestions: "currentDocument",
+              formatOnPaste: true,
+              formatOnType: true,
             }}
           />
         </Card>
@@ -244,13 +253,18 @@ function Compiler() {
             <Textarea rows={4} value={stdin} onChange={(e) => setStdin(e.target.value)} placeholder="Optional input…" className="font-mono text-xs" />
           </Card>
           <Card className="p-4">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
               <p className="text-sm font-medium">Output</p>
-              {elapsed != null && <span className="text-[10px] text-muted-foreground font-mono">{elapsed}ms</span>}
+              <div className="flex items-center gap-3 text-[10px] font-mono text-muted-foreground">
+                {status && <span className={status === "Accepted" ? "text-emerald-600" : ""}>{status}</span>}
+                {runtimeTime && <span className="flex items-center gap-1"><Timer className="size-3" />{runtimeTime}</span>}
+                {runtimeMem && <span className="flex items-center gap-1"><Cpu className="size-3" />{runtimeMem}</span>}
+                {elapsed != null && <span>·{elapsed}ms rt</span>}
+              </div>
             </div>
             {running && !stdout && !stderr ? (
               <div className="flex items-center gap-2 text-xs text-muted-foreground py-6">
-                <Loader2 className="size-3.5 animate-spin" /> Running…
+                <Loader2 className="size-3.5 animate-spin" /> Executing on remote sandbox…
               </div>
             ) : (
               <pre className="text-xs bg-muted rounded-md p-3 min-h-[140px] max-h-[280px] overflow-auto whitespace-pre-wrap font-mono">
