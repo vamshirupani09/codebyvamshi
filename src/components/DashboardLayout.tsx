@@ -10,6 +10,7 @@ import {
   LogOut,
   Bell,
   Sparkles,
+  FileScan,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,6 +35,7 @@ const nav = [
   { to: "/assistant", label: "AI Assistant", icon: Bot },
   { to: "/roadmap", label: "DSA Roadmap", icon: Map },
   { to: "/assignments", label: "Assignments", icon: CalendarDays },
+  { to: "/resume-checker", label: "Resume Checker", icon: FileScan },
   { to: "/resources", label: "Resources", icon: BookOpen },
   { to: "/profile", label: "Profile", icon: UserIcon },
 ] as const;
