@@ -96,6 +96,13 @@ function Compiler() {
         data: { language_id: config.judge0, source_code: code, stdin },
       });
       setElapsed(Math.round(performance.now() - start));
+      if (!result.ok) {
+        const msg = result.error || "Code runner is unavailable.";
+        setStatus(result.status);
+        setStderr(msg);
+        toast.error(msg);
+        return;
+      }
       setStdout(result.stdout);
       const errParts = [
         result.compile_output ? `[compile]\n${result.compile_output}` : "",
