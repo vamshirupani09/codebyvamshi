@@ -16,9 +16,35 @@ type Judge0Response = {
   memory: number | null;
 };
 
+type RunCodeResult = {
+  ok: boolean;
+  stdout: string;
+  stderr: string;
+  compile_output: string;
+  message: string;
+  status: string;
+  statusId: number;
+  time: string;
+  memory: string;
+  error?: string;
+};
+
 const b64 = (s: string) => Buffer.from(s, "utf-8").toString("base64");
 const unb64 = (s: string | null | undefined) =>
   s ? Buffer.from(s, "base64").toString("utf-8") : "";
+
+const runnerError = (error: string): RunCodeResult => ({
+  ok: false,
+  stdout: "",
+  stderr: "",
+  compile_output: "",
+  message: "",
+  status: "Runner unavailable",
+  statusId: 0,
+  time: "",
+  memory: "",
+  error,
+});
 
 export const runCode = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => {
@@ -35,34 +61,43 @@ export const runCode = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const key = process.env.RAPIDAPI_JUDGE0_KEY;
-    if (!key) throw new Error("Code runner is not configured (missing RAPIDAPI_JUDGE0_KEY).");
+    if (!key) {
+      return runnerError("Code runner is not configured. Add RAPIDAPI_JUDGE0_KEY in project secrets.");
+    }
 
     const url =
       "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true&fields=*";
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-rapidapi-key": key,
-        "x-rapidapi-host": "judge0-ce.p.rapidapi.com",
-      },
-      body: JSON.stringify({
-        language_id: data.language_id,
-        source_code: b64(data.source_code),
-        stdin: b64(data.stdin),
-      }),
-    });
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-rapidapi-key": key,
+          "x-rapidapi-host": "judge0-ce.p.rapidapi.com",
+        },
+        body: JSON.stringify({
+          language_id: data.language_id,
+          source_code: b64(data.source_code),
+          stdin: b64(data.stdin),
+        }),
+      });
+    } catch {
+      return runnerError("Could not reach the code runner. Please try again in a moment.");
+    }
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
-      if (res.status === 429) throw new Error("Rate limit hit on code runner. Try again shortly.");
-      if (res.status === 401 || res.status === 403)
-        throw new Error("Code runner rejected the API key. Update RAPIDAPI_JUDGE0_KEY.");
-      throw new Error(`Runner error ${res.status}: ${text.slice(0, 200)}`);
+      if (res.status === 429) return runnerError("Rate limit hit on code runner. Try again shortly.");
+      if (res.status === 401 || res.status === 403) {
+        return runnerError("Code runner rejected the API key. Replace RAPIDAPI_JUDGE0_KEY with a valid Judge0 RapidAPI key.");
+      }
+      return runnerError(`Runner error ${res.status}: ${text.slice(0, 200)}`);
     }
 
     const j = (await res.json()) as Judge0Response;
     return {
+      ok: true,
       stdout: unb64(j.stdout),
       stderr: unb64(j.stderr),
       compile_output: unb64(j.compile_output),

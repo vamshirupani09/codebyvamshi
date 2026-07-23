@@ -13,6 +13,22 @@ import { PISTON_LANGUAGES, EDITOR_THEMES, type LangId } from "@/lib/dsa-data";
 import { runCode } from "@/lib/judge0.functions";
 
 export const Route = createFileRoute("/compiler")({
+  head: () => ({
+    meta: [
+      { title: "Online Compiler | Codex AI Coding Assistant" },
+      {
+        name: "description",
+        content: "Run Java, Python, C, C++, JavaScript, TypeScript, Go, Rust, and Kotlin code with Codex AI Coding Assistant.",
+      },
+      { property: "og:title", content: "Online Compiler | Codex AI Coding Assistant" },
+      {
+        property: "og:description",
+        content: "Run code in 9 languages with runtime status, editor themes, stdin, upload, download, and AI-assisted learning tools.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: () => (
     <DashboardLayout>
       <Compiler />
@@ -96,6 +112,13 @@ function Compiler() {
         data: { language_id: config.judge0, source_code: code, stdin },
       });
       setElapsed(Math.round(performance.now() - start));
+      if (!result.ok) {
+        const msg = result.error || "Code runner is unavailable.";
+        setStatus(result.status);
+        setStderr(msg);
+        toast.error(msg);
+        return;
+      }
       setStdout(result.stdout);
       const errParts = [
         result.compile_output ? `[compile]\n${result.compile_output}` : "",
