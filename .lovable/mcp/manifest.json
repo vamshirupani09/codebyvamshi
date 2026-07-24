@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://gznkjtcqgofyjdvkuftf.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "codex-mcp",
+      "version": "0.1.0",
+      "title": "Codex Coding Assistant"
+    },
+    "tools": [
+      {
+        "name": "list_bookmarks",
+        "title": "List bookmarks",
+        "description": "List the signed-in user's saved coding problem bookmarks.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "add_bookmark",
+        "title": "Add bookmark",
+        "description": "Save a coding problem to the signed-in user's bookmarks.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "problem_title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "problem_url": {
+              "type": "string",
+              "maxLength": 1000,
+              "format": "uri"
+            },
+            "topic": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "problem_title",
+            "problem_url"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_dsa_progress",
+        "title": "List DSA progress",
+        "description": "List DSA roadmap topics the signed-in user has marked complete.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "mark_topic_complete",
+        "title": "Mark DSA topic complete",
+        "description": "Mark a DSA roadmap topic as complete or not-complete for the signed-in user.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Roadmap topic id or name."
+            },
+            "completed": {
+              "type": "boolean",
+              "description": "true to mark complete, false to un-mark."
+            }
+          },
+          "required": [
+            "topic",
+            "completed"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_notifications",
+        "title": "List notifications",
+        "description": "List the signed-in user's recent Codex notifications.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 50
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

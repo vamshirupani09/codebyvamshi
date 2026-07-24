@@ -15,6 +15,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import heroImg from "@/assets/hero-illustration.jpg";
 
 export const Route = createFileRoute("/")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : "",
+  }),
   component: Landing,
 });
 
@@ -61,9 +64,15 @@ function Landing() {
   const [showReset, setShowReset] = useState(false);
   const [showPw, setShowPw] = useState(false);
 
+  const { next } = Route.useSearch();
+  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "";
+
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard" });
-  }, [loading, user, navigate]);
+    if (!loading && user) {
+      if (safeNext) window.location.href = safeNext;
+      else navigate({ to: "/dashboard" });
+    }
+  }, [loading, user, navigate, safeNext]);
 
   const signInForm = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
@@ -90,10 +99,13 @@ function Landing() {
   const onSignUp = async (values: SignUpForm) => {
     setBusy(true);
     try {
+      const emailRedirectTo = safeNext
+        ? `${window.location.origin}${safeNext}`
+        : `${window.location.origin}/dashboard`;
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
-        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+        options: { emailRedirectTo },
       });
       if (error) throw error;
       if (data.session) toast.success("Account created — you're in!");
@@ -108,9 +120,10 @@ function Landing() {
   const google = async () => {
     setBusy(true);
     try {
-      const r = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
+      const redirect_uri = safeNext
+        ? `${window.location.origin}${safeNext}`
+        : window.location.origin;
+      const r = await lovable.auth.signInWithOAuth("google", { redirect_uri });
       if (r.error) {
         toast.error(r.error.message ?? "Google sign-in failed");
         setBusy(false);
