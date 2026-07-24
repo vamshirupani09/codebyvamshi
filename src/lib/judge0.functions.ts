@@ -46,6 +46,65 @@ const runnerError = (error: string): RunCodeResult => ({
   error,
 });
 
+const formatJudge0 = (j: Judge0Response): RunCodeResult => ({
+  ok: true,
+  stdout: unb64(j.stdout),
+  stderr: unb64(j.stderr),
+  compile_output: unb64(j.compile_output),
+  message: j.message ?? "",
+  status: j.status?.description ?? "Unknown",
+  statusId: j.status?.id ?? 0,
+  time: j.time ? `${j.time}s` : "",
+  memory: j.memory ? `${(j.memory / 1024).toFixed(1)} MB` : "",
+});
+
+type Provider = {
+  name: string;
+  url: string;
+  headers: Record<string, string>;
+};
+
+/**
+ * Try a Judge0-compatible provider. Returns:
+ *  - RunCodeResult on success
+ *  - { retry: true, reason } when the caller should try the next provider
+ *  - RunCodeResult (ok:false) for terminal errors
+ */
+async function tryProvider(
+  p: Provider,
+  body: object,
+): Promise<RunCodeResult | { retry: true; reason: string }> {
+  let res: Response;
+  try {
+    const ctrl = new AbortController();
+    const timeout = setTimeout(() => ctrl.abort(), 25_000);
+    res = await fetch(p.url, {
+      method: "POST",
+      headers: { "content-type": "application/json", ...p.headers },
+      body: JSON.stringify(body),
+      signal: ctrl.signal,
+    });
+    clearTimeout(timeout);
+  } catch {
+    return { retry: true, reason: `${p.name} unreachable` };
+  }
+
+  if (!res.ok) {
+    if (res.status === 401 || res.status === 403 || res.status === 429) {
+      return { retry: true, reason: `${p.name} ${res.status}` };
+    }
+    const text = await res.text().catch(() => "");
+    return runnerError(`Runner error ${res.status}: ${text.slice(0, 200)}`);
+  }
+
+  try {
+    const j = (await res.json()) as Judge0Response;
+    return formatJudge0(j);
+  } catch {
+    return { retry: true, reason: `${p.name} bad response` };
+  }
+}
+
 export const runCode = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => {
     const i = input as RunInput;
@@ -61,50 +120,43 @@ export const runCode = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const key = process.env.RAPIDAPI_JUDGE0_KEY;
-    if (!key) {
-      return runnerError("Code runner is not configured. Add RAPIDAPI_JUDGE0_KEY in project secrets.");
-    }
 
-    const url =
-      "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true&fields=*";
-    let res: Response;
-    try {
-      res = await fetch(url, {
-        method: "POST",
+    const providers: Provider[] = [];
+    // 1) Preferred: RapidAPI Judge0 CE (when a key is configured)
+    if (key) {
+      providers.push({
+        name: "rapidapi",
+        url: "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true&fields=*",
         headers: {
-          "content-type": "application/json",
           "x-rapidapi-key": key,
           "x-rapidapi-host": "judge0-ce.p.rapidapi.com",
         },
-        body: JSON.stringify({
-          language_id: data.language_id,
-          source_code: b64(data.source_code),
-          stdin: b64(data.stdin),
-        }),
       });
-    } catch {
-      return runnerError("Could not reach the code runner. Please try again in a moment.");
     }
+    // 2) Fallback: public Judge0 CE instance (no key required, best-effort)
+    providers.push({
+      name: "ce.judge0",
+      url: "https://ce.judge0.com/submissions?base64_encoded=true&wait=true&fields=*",
+      headers: {},
+    });
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      if (res.status === 429) return runnerError("Rate limit hit on code runner. Try again shortly.");
-      if (res.status === 401 || res.status === 403) {
-        return runnerError("Code runner rejected the API key. Replace RAPIDAPI_JUDGE0_KEY with a valid Judge0 RapidAPI key.");
-      }
-      return runnerError(`Runner error ${res.status}: ${text.slice(0, 200)}`);
-    }
-
-    const j = (await res.json()) as Judge0Response;
-    return {
-      ok: true,
-      stdout: unb64(j.stdout),
-      stderr: unb64(j.stderr),
-      compile_output: unb64(j.compile_output),
-      message: j.message ?? "",
-      status: j.status?.description ?? "Unknown",
-      statusId: j.status?.id ?? 0,
-      time: j.time ? `${j.time}s` : "",
-      memory: j.memory ? `${(j.memory / 1024).toFixed(1)} MB` : "",
+    const body = {
+      language_id: data.language_id,
+      source_code: b64(data.source_code),
+      stdin: b64(data.stdin),
     };
+
+    const reasons: string[] = [];
+    for (const p of providers) {
+      const r = await tryProvider(p, body);
+      if ("retry" in r) {
+        reasons.push(r.reason);
+        continue;
+      }
+      return r;
+    }
+
+    return runnerError(
+      `Code runners are temporarily unavailable (${reasons.join(", ")}). Please retry in a moment.`,
+    );
   });
