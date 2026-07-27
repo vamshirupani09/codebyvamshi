@@ -24,6 +24,7 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { awardActivity } from "@/lib/gamification";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/resume-checker")({
@@ -182,6 +183,7 @@ function ResumeChecker() {
       const j = await res.json();
       if (!res.ok) throw new Error(j.error || "Analysis failed");
       setReport(j.report as Report);
+      void awardActivity("resume_analysis", { label: file?.name });
       toast.success(`Scored ${j.overall_score}/100`);
       loadHistory();
     } catch (e: unknown) {

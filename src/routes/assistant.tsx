@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { awardActivity } from "@/lib/gamification";
 
 export const Route = createFileRoute("/assistant")({
   component: () => (
@@ -52,6 +53,7 @@ function Assistant() {
         },
         body: JSON.stringify({ agent, prompt, context }),
       });
+      void awardActivity("ai_query", { label: agent });
       if (!res.ok) {
         if (res.status === 401) toast.error("Please sign in to use the assistant.");
         else if (res.status === 429) toast.error("Rate limited. Try again in a moment.");
