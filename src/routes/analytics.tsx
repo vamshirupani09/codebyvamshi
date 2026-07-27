@@ -331,10 +331,11 @@ function Analytics() {
             {ROADMAP.map((t) => (
               <li key={t.topic} className="flex items-center justify-between gap-2">
                 <span className="truncate">{t.topic}</span>
-                <span className="text-xs text-muted-foreground">{t.level}</span>
+                <span className="text-xs text-muted-foreground shrink-0">{t.items.length} items</span>
               </li>
             ))}
           </ul>
+
         </Card>
       </div>
 
