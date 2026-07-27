@@ -77,6 +77,8 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [notifs, setNotifs] = useState<Array<{ id: string; title: string; message: string | null; read: boolean; created_at: string }>>([]);
+  const [stats, setStats] = useState<UserStats | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/", search: { redirect: location.pathname } as never });
@@ -90,7 +92,14 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
       .order("created_at", { ascending: false })
       .limit(15)
       .then(({ data }) => data && setNotifs(data));
-  }, [user]);
+    supabase
+      .from("user_stats" as never)
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => data && setStats(data as unknown as UserStats));
+  }, [user, location.pathname]);
+
 
   const unread = notifs.filter((n) => !n.read).length;
   const initials = (user?.email ?? "U").slice(0, 2).toUpperCase();
