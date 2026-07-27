@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { PISTON_LANGUAGES, EDITOR_THEMES, type LangId } from "@/lib/dsa-data";
 import { runCode } from "@/lib/judge0.functions";
+import { awardActivity } from "@/lib/gamification";
 
 export const Route = createFileRoute("/compiler")({
   head: () => ({
@@ -131,6 +132,7 @@ function Compiler() {
       setStatus(result.status);
       setRuntimeTime(result.time);
       setRuntimeMem(result.memory);
+      void awardActivity("code_run", { language: config.label, label: result.status });
       if (result.statusId !== 3 && result.statusId !== 0) {
         toast.warning(result.status);
       }

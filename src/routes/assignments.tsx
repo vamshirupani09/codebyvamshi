@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { awardActivity } from "@/lib/gamification";
 
 interface Assignment {
   id: string;
@@ -65,7 +66,8 @@ function Assignments() {
     } else {
       await supabase.from("assignment_completions").insert({ user_id: user.id, assignment_id: a.id });
       setDone((p) => new Set(p).add(a.id));
-      toast.success("Nice — assignment completed!");
+      await awardActivity("assignment_complete", { label: a.title });
+      toast.success("Nice — assignment completed! +60 XP");
     }
   };
 
