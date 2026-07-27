@@ -11,6 +11,10 @@ import {
   Bell,
   Sparkles,
   FileScan,
+  BarChart3,
+  Menu,
+  Flame,
+  Zap,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,9 +29,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AIMentor } from "@/components/AIMentor";
+import type { UserStats } from "@/lib/gamification";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -35,10 +41,36 @@ const nav = [
   { to: "/assistant", label: "AI Assistant", icon: Bot },
   { to: "/roadmap", label: "DSA Roadmap", icon: Map },
   { to: "/assignments", label: "Assignments", icon: CalendarDays },
+  { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/resume-checker", label: "Resume Checker", icon: FileScan },
   { to: "/resources", label: "Resources", icon: BookOpen },
   { to: "/profile", label: "Profile", icon: UserIcon },
 ] as const;
+
+function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+  return (
+    <nav className="mt-6 flex flex-col gap-1">
+      {nav.map((n) => {
+        const active = pathname === n.to;
+        const Icon = n.icon;
+        return (
+          <Link
+            key={n.to}
+            to={n.to}
+            onClick={onNavigate}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+              active ? "bg-primary text-primary-foreground" : "text-sidebar-foreground hover:bg-sidebar-accent"
+            }`}
+          >
+            <Icon className="size-4" />
+            {n.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
   const { user, loading, signOut } = useAuth();
