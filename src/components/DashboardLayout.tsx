@@ -11,6 +11,10 @@ import {
   Bell,
   Sparkles,
   FileScan,
+  BarChart3,
+  Menu,
+  Flame,
+  Zap,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,9 +29,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AIMentor } from "@/components/AIMentor";
+import type { UserStats } from "@/lib/gamification";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -35,16 +41,44 @@ const nav = [
   { to: "/assistant", label: "AI Assistant", icon: Bot },
   { to: "/roadmap", label: "DSA Roadmap", icon: Map },
   { to: "/assignments", label: "Assignments", icon: CalendarDays },
+  { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/resume-checker", label: "Resume Checker", icon: FileScan },
   { to: "/resources", label: "Resources", icon: BookOpen },
   { to: "/profile", label: "Profile", icon: UserIcon },
 ] as const;
+
+function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+  return (
+    <nav className="mt-6 flex flex-col gap-1">
+      {nav.map((n) => {
+        const active = pathname === n.to;
+        const Icon = n.icon;
+        return (
+          <Link
+            key={n.to}
+            to={n.to}
+            onClick={onNavigate}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+              active ? "bg-primary text-primary-foreground" : "text-sidebar-foreground hover:bg-sidebar-accent"
+            }`}
+          >
+            <Icon className="size-4" />
+            {n.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [notifs, setNotifs] = useState<Array<{ id: string; title: string; message: string | null; read: boolean; created_at: string }>>([]);
+  const [stats, setStats] = useState<UserStats | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/", search: { redirect: location.pathname } as never });
@@ -58,7 +92,14 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
       .order("created_at", { ascending: false })
       .limit(15)
       .then(({ data }) => data && setNotifs(data));
-  }, [user]);
+    supabase
+      .from("user_stats" as never)
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => data && setStats(data as unknown as UserStats));
+  }, [user, location.pathname]);
+
 
   const unread = notifs.filter((n) => !n.read).length;
   const initials = (user?.email ?? "U").slice(0, 2).toUpperCase();
@@ -86,26 +127,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
           </div>
           <span className="font-display text-xl">Codex</span>
         </Link>
-        <nav className="mt-6 flex flex-col gap-1">
-          {nav.map((n) => {
-            const active = location.pathname === n.to;
-            const Icon = n.icon;
-            return (
-              <Link
-                key={n.to}
-                to={n.to}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent"
-                }`}
-              >
-                <Icon className="size-4" />
-                {n.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <NavLinks pathname={location.pathname} />
         <div className="mt-auto text-xs text-muted-foreground px-2">
           <p className="font-display text-sm text-foreground">Tip</p>
           <p className="mt-1">Use the AI Assistant for explanations, debugging & test cases.</p>
@@ -113,7 +135,23 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-border bg-background/80 backdrop-blur px-4 md:px-8 h-16">
+        <header className="sticky top-0 z-20 flex items-center gap-2 sm:gap-4 border-b border-border bg-background/80 backdrop-blur px-3 sm:px-4 md:px-8 h-16">
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
+                <Menu className="size-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-72 bg-sidebar p-4">
+              <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-2 py-3">
+                <div className="size-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
+                  <Sparkles className="size-4" />
+                </div>
+                <span className="font-display text-xl">Codex</span>
+              </Link>
+              <NavLinks pathname={location.pathname} onNavigate={() => setMenuOpen(false)} />
+            </SheetContent>
+          </Sheet>
           <div className="md:hidden flex items-center gap-2">
             <div className="size-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
               <Sparkles className="size-3.5" />
@@ -121,6 +159,21 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
             <span className="font-display text-lg">Codex</span>
           </div>
           <div className="flex-1" />
+          <Link
+            to="/analytics"
+            className="hidden xs:flex sm:flex items-center gap-2 rounded-full border border-border px-2.5 py-1 text-xs hover:bg-secondary transition-colors"
+            title="View analytics"
+          >
+            <span className="flex items-center gap-1">
+              <Zap className="size-3.5 text-primary" />
+              {(stats?.xp ?? 0).toLocaleString()}
+            </span>
+            <span className="flex items-center gap-1">
+              <Flame className="size-3.5 text-orange-500" />
+              {stats?.current_streak ?? 0}
+            </span>
+          </Link>
+
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">

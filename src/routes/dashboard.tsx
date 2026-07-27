@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Code2, Bot, Map, CalendarDays, BookOpen, Trophy } from "lucide-react";
+import { Code2, Bot, Map, CalendarDays, BookOpen, Trophy, BarChart3 } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +44,7 @@ function Dashboard() {
     { to: "/assistant", icon: Bot, t: "AI Assistant", d: "Coder · Debugger · Tests · Explainer" },
     { to: "/roadmap", icon: Map, t: "DSA Roadmap", d: "Master arrays to graphs" },
     { to: "/assignments", icon: CalendarDays, t: "Weekly Tasks", d: "Stay on track" },
+    { to: "/analytics", icon: BarChart3, t: "Analytics", d: "XP, streaks, badges & charts" },
     { to: "/resources", icon: BookOpen, t: "Resources", d: "Books, sites & videos" },
   ] as const;
 

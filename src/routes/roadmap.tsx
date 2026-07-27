@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ROADMAP } from "@/lib/dsa-data";
+import { awardActivity } from "@/lib/gamification";
 
 export const Route = createFileRoute("/roadmap")({
   component: () => (
@@ -42,6 +43,7 @@ function Roadmap() {
       { user_id: user.id, topic, completed: !isDone, updated_at: new Date().toISOString() },
       { onConflict: "user_id,topic" }
     );
+    if (!isDone) await awardActivity("topic_complete", { topic });
   };
 
   const pct = Math.round((done.size / ROADMAP.length) * 100);

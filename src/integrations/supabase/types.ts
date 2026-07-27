@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          activity_type: string
+          coins: number
+          created_at: string
+          id: string
+          label: string | null
+          language: string | null
+          topic: string | null
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          activity_type: string
+          coins?: number
+          created_at?: string
+          id?: string
+          label?: string | null
+          language?: string | null
+          topic?: string | null
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          activity_type?: string
+          coins?: number
+          created_at?: string
+          id?: string
+          label?: string | null
+          language?: string | null
+          topic?: string | null
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       assignment_completions: {
         Row: {
           assignment_id: string
@@ -211,12 +247,98 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badges: {
+        Row: {
+          badge_key: string
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_stats: {
+        Row: {
+          coins: number
+          current_streak: number
+          last_active_date: string | null
+          longest_streak: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          coins?: number
+          current_streak?: number
+          last_active_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          coins?: number
+          current_streak?: number
+          last_active_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      award_activity: {
+        Args: {
+          _coins?: number
+          _label?: string
+          _language?: string
+          _topic?: string
+          _type: string
+          _xp?: number
+        }
+        Returns: {
+          coins: number
+          current_streak: number
+          last_active_date: string | null
+          longest_streak: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_stats"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      get_leaderboard: {
+        Args: { _limit?: number }
+        Returns: {
+          coins: number
+          current_streak: number
+          display_name: string
+          longest_streak: number
+          user_id: string
+          xp: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
