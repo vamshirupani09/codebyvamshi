@@ -14,9 +14,12 @@ import { Route as ResumeCheckerRouteImport } from './routes/resume-checker'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PlacementRouteImport } from './routes/placement'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as InterviewRouteImport } from './routes/interview'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CompilerRouteImport } from './routes/compiler'
+import { Route as CompaniesRouteImport } from './routes/companies'
 import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as AssignmentsRouteImport } from './routes/assignments'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
@@ -51,9 +54,19 @@ const ProfileRoute = ProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlacementRoute = PlacementRouteImport.update({
+  id: '/placement',
+  path: '/placement',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InterviewRoute = InterviewRouteImport.update({
+  id: '/interview',
+  path: '/interview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -64,6 +77,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const CompilerRoute = CompilerRouteImport.update({
   id: '/compiler',
   path: '/compiler',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompaniesRoute = CompaniesRouteImport.update({
+  id: '/companies',
+  path: '/companies',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AssistantRoute = AssistantRouteImport.update({
@@ -115,9 +133,12 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/assignments': typeof AssignmentsRoute
   '/assistant': typeof AssistantRoute
+  '/companies': typeof CompaniesRoute
   '/compiler': typeof CompilerRoute
   '/dashboard': typeof DashboardRoute
+  '/interview': typeof InterviewRoute
   '/mcp': typeof McpRoute
+  '/placement': typeof PlacementRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
@@ -133,9 +154,12 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/assignments': typeof AssignmentsRoute
   '/assistant': typeof AssistantRoute
+  '/companies': typeof CompaniesRoute
   '/compiler': typeof CompilerRoute
   '/dashboard': typeof DashboardRoute
+  '/interview': typeof InterviewRoute
   '/mcp': typeof McpRoute
+  '/placement': typeof PlacementRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
@@ -152,9 +176,12 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/assignments': typeof AssignmentsRoute
   '/assistant': typeof AssistantRoute
+  '/companies': typeof CompaniesRoute
   '/compiler': typeof CompilerRoute
   '/dashboard': typeof DashboardRoute
+  '/interview': typeof InterviewRoute
   '/mcp': typeof McpRoute
+  '/placement': typeof PlacementRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
@@ -172,9 +199,12 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/assignments'
     | '/assistant'
+    | '/companies'
     | '/compiler'
     | '/dashboard'
+    | '/interview'
     | '/mcp'
+    | '/placement'
     | '/profile'
     | '/reset-password'
     | '/resources'
@@ -190,9 +220,12 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/assignments'
     | '/assistant'
+    | '/companies'
     | '/compiler'
     | '/dashboard'
+    | '/interview'
     | '/mcp'
+    | '/placement'
     | '/profile'
     | '/reset-password'
     | '/resources'
@@ -208,9 +241,12 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/assignments'
     | '/assistant'
+    | '/companies'
     | '/compiler'
     | '/dashboard'
+    | '/interview'
     | '/mcp'
+    | '/placement'
     | '/profile'
     | '/reset-password'
     | '/resources'
@@ -227,9 +263,12 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   AssignmentsRoute: typeof AssignmentsRoute
   AssistantRoute: typeof AssistantRoute
+  CompaniesRoute: typeof CompaniesRoute
   CompilerRoute: typeof CompilerRoute
   DashboardRoute: typeof DashboardRoute
+  InterviewRoute: typeof InterviewRoute
   McpRoute: typeof McpRoute
+  PlacementRoute: typeof PlacementRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ResourcesRoute: typeof ResourcesRoute
@@ -278,11 +317,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/placement': {
+      id: '/placement'
+      path: '/placement'
+      fullPath: '/placement'
+      preLoaderRoute: typeof PlacementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mcp': {
       id: '/mcp'
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/interview': {
+      id: '/interview'
+      path: '/interview'
+      fullPath: '/interview'
+      preLoaderRoute: typeof InterviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -297,6 +350,13 @@ declare module '@tanstack/react-router' {
       path: '/compiler'
       fullPath: '/compiler'
       preLoaderRoute: typeof CompilerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/companies': {
+      id: '/companies'
+      path: '/companies'
+      fullPath: '/companies'
+      preLoaderRoute: typeof CompaniesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/assistant': {
@@ -363,9 +423,12 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   AssignmentsRoute: AssignmentsRoute,
   AssistantRoute: AssistantRoute,
+  CompaniesRoute: CompaniesRoute,
   CompilerRoute: CompilerRoute,
   DashboardRoute: DashboardRoute,
+  InterviewRoute: InterviewRoute,
   McpRoute: McpRoute,
+  PlacementRoute: PlacementRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ResourcesRoute: ResourcesRoute,

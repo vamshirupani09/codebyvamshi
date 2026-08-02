@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { CodeReviewPanel } from "@/components/CodeReviewPanel";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { PISTON_LANGUAGES, EDITOR_THEMES, type LangId } from "@/lib/dsa-data";
@@ -303,7 +305,9 @@ function Compiler() {
               </>
             )}
           </Card>
+          <CodeReviewPanel code={code} language={config.label ?? lang} />
         </div>
+
       </div>
     </div>
   );
