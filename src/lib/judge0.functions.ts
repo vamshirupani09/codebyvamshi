@@ -1,4 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
 
 type RunInput = {
   language_id: number;
@@ -106,6 +108,7 @@ async function tryProvider(
 }
 
 export const runCode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => {
     const i = input as RunInput;
     if (!i || typeof i.language_id !== "number" || typeof i.source_code !== "string") {
