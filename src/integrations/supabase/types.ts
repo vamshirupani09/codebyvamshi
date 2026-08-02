@@ -163,6 +163,51 @@ export type Database = {
         }
         Relationships: []
       }
+      interview_sessions: {
+        Row: {
+          company: string | null
+          created_at: string
+          difficulty: string
+          id: string
+          interview_type: string
+          overall_score: number | null
+          report: Json | null
+          role_target: string | null
+          status: string
+          transcript: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          difficulty?: string
+          id?: string
+          interview_type: string
+          overall_score?: number | null
+          report?: Json | null
+          role_target?: string | null
+          status?: string
+          transcript?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          difficulty?: string
+          id?: string
+          interview_type?: string
+          overall_score?: number | null
+          report?: Json | null
+          role_target?: string | null
+          status?: string
+          transcript?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string

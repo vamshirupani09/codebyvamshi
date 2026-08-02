@@ -21,7 +21,14 @@ const AGENT_PROMPTS: Record<string, string> = {
     "You are the Optimizer Agent. Given code, propose a more efficient or cleaner version. Structure your reply as: 1) Issues in original (bullets), 2) Optimization strategy (2-3 lines), 3) Optimized code in a markdown code block, 4) Before/After complexity table.",
   hint:
     "You are the Hint Agent. NEVER give the full solution. Give exactly 3 progressive hints as a numbered list — Hint 1: nudges toward the right data structure / observation. Hint 2: suggests the algorithmic technique. Hint 3: outlines the high-level approach in 1-2 sentences without writing code. End with a single line: 'Try again before revealing more.'",
+  code_review:
+    "You are the Code Review Agent. Review the submitted code like a senior engineer. Return STRICT JSON only, no markdown fences, matching: {\"summary\":string,\"scores\":{\"bugs\":number,\"readability\":number,\"naming\":number,\"optimization\":number,\"security\":number,\"best_practices\":number,\"complexity\":number,\"maintainability\":number},\"overall\":number,\"findings\":[{\"category\":string,\"severity\":\"low\"|\"medium\"|\"high\",\"title\":string,\"detail\":string,\"suggestion\":string}],\"complexity\":{\"time\":string,\"space\":string},\"improved_code\":string}. All scores are 0-100 integers.",
+  interviewer:
+    "You are a senior interviewer conducting a realistic mock interview. You receive the interview config and the transcript so far. Ask EXACTLY ONE next question, tailored to the interview type, role, company and difficulty, building on the candidate's previous answers. Return STRICT JSON only, no markdown fences: {\"question\":string,\"topic\":string,\"feedback_on_previous\":string|null,\"score_for_previous\":number|null}. score_for_previous is 0-10 and null for the very first question. Keep feedback to 1-3 sentences.",
+  interview_report:
+    "You are an interview evaluator. Given the interview config and full transcript, produce a final report. Return STRICT JSON only, no markdown fences: {\"overall_score\":number,\"verdict\":string,\"categories\":[{\"name\":string,\"score\":number,\"comment\":string}],\"strengths\":[string],\"improvements\":[string],\"action_plan\":[string],\"summary\":string}. overall_score is 0-100; category scores are 0-100.",
 };
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -36,7 +43,9 @@ Deno.serve(async (req) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return json({ error: "Unauthorized" }, 401);
 
-    const { agent, prompt, context } = await req.json();
+    const body = await req.json();
+    const { agent, prompt, context } = body;
+    const wantsJson = body.json === true;
     const sys = AGENT_PROMPTS[agent] ?? AGENT_PROMPTS.coder;
 
     const messages = [
@@ -51,7 +60,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages,
-        stream: true,
+        stream: !wantsJson,
       }),
     });
 
@@ -62,6 +71,23 @@ Deno.serve(async (req) => {
       console.error("AI gateway error:", res.status, t);
       return json({ error: "AI gateway error" }, 500);
     }
+
+    if (wantsJson) {
+      const data = await res.json();
+      const raw: string = data?.choices?.[0]?.message?.content ?? "";
+      const cleaned = raw.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+      const start = cleaned.indexOf("{");
+      const end = cleaned.lastIndexOf("}");
+      const slice = start !== -1 && end !== -1 ? cleaned.slice(start, end + 1) : cleaned;
+      try {
+        return json({ result: JSON.parse(slice) });
+      } catch {
+        console.error("Failed to parse model JSON", raw.slice(0, 500));
+        return json({ error: "The AI returned an unexpected format. Please retry." }, 502);
+      }
+    }
+
+
 
     return new Response(res.body, { headers: { ...corsHeaders, "Content-Type": "text/event-stream" } });
   } catch (e) {

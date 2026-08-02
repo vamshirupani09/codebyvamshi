@@ -15,6 +15,10 @@ import {
   Menu,
   Flame,
   Zap,
+  MessagesSquare,
+  Building2,
+  Target,
+
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -39,13 +43,17 @@ const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/compiler", label: "Compiler", icon: Code2 },
   { to: "/assistant", label: "AI Assistant", icon: Bot },
+  { to: "/interview", label: "Mock Interview", icon: MessagesSquare },
   { to: "/roadmap", label: "DSA Roadmap", icon: Map },
   { to: "/assignments", label: "Assignments", icon: CalendarDays },
+  { to: "/companies", label: "Company Prep", icon: Building2 },
+  { to: "/placement", label: "Placement", icon: Target },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/resume-checker", label: "Resume Checker", icon: FileScan },
   { to: "/resources", label: "Resources", icon: BookOpen },
   { to: "/profile", label: "Profile", icon: UserIcon },
 ] as const;
+
 
 function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
   return (
