@@ -15,9 +15,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import heroImg from "@/assets/hero-illustration.jpg";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : "",
-  }),
+  validateSearch: (s: Record<string, unknown>): { next?: string } => {
+    const n = typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : undefined;
+    return n ? { next: n } : {};
+  },
   component: Landing,
 });
 

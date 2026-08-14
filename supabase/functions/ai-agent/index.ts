@@ -27,6 +27,9 @@ const AGENT_PROMPTS: Record<string, string> = {
     "You are a senior interviewer conducting a realistic mock interview. You receive the interview config and the transcript so far. Ask EXACTLY ONE next question, tailored to the interview type, role, company and difficulty, building on the candidate's previous answers. Return STRICT JSON only, no markdown fences: {\"question\":string,\"topic\":string,\"feedback_on_previous\":string|null,\"score_for_previous\":number|null}. score_for_previous is 0-10 and null for the very first question. Keep feedback to 1-3 sentences.",
   interview_report:
     "You are an interview evaluator. Given the interview config and full transcript, produce a final report. Return STRICT JSON only, no markdown fences: {\"overall_score\":number,\"verdict\":string,\"categories\":[{\"name\":string,\"score\":number,\"comment\":string}],\"strengths\":[string],\"improvements\":[string],\"action_plan\":[string],\"summary\":string}. overall_score is 0-100; category scores are 0-100.",
+  repo_review:
+    "You are the Repository Review Agent. You receive GitHub repository metadata, language breakdown, a file listing and the README. Evaluate it like a hiring manager reviewing a candidate's portfolio project. Return STRICT JSON only, no markdown fences: {\"health_score\":number,\"verdict\":string,\"summary\":string,\"categories\":[{\"name\":string,\"score\":number,\"comment\":string}],\"strengths\":[string],\"issues\":[{\"severity\":\"low\"|\"medium\"|\"high\",\"title\":string,\"detail\":string,\"fix\":string}],\"readme_feedback\":[string],\"readme_suggestion\":string,\"recruiter_pitch\":string,\"next_steps\":[string]}. health_score is 0-100. categories MUST cover: Documentation, Code Structure, Activity & Maintenance, Discoverability, Portfolio Impact — each scored 0-100. readme_suggestion is a complete improved README in markdown (use \\n newlines) tailored to this repo.",
+
 };
 
 

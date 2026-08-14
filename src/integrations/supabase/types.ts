@@ -163,6 +163,75 @@ export type Database = {
         }
         Relationships: []
       }
+      github_connections: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          connected_at: string
+          followers: number
+          html_url: string | null
+          name: string | null
+          public_repos: number
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          connected_at?: string
+          followers?: number
+          html_url?: string | null
+          name?: string | null
+          public_repos?: number
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          connected_at?: string
+          followers?: number
+          html_url?: string | null
+          name?: string | null
+          public_repos?: number
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      github_repo_reviews: {
+        Row: {
+          created_at: string
+          health_score: number
+          id: string
+          repo_full_name: string
+          repo_url: string | null
+          report: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          health_score?: number
+          id?: string
+          repo_full_name: string
+          repo_url?: string | null
+          report?: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          health_score?: number
+          id?: string
+          repo_full_name?: string
+          repo_url?: string | null
+          report?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       interview_sessions: {
         Row: {
           company: string | null

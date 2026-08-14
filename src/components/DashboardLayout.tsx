@@ -18,6 +18,7 @@ import {
   MessagesSquare,
   Building2,
   Target,
+  Github,
 
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
@@ -50,6 +51,7 @@ const nav = [
   { to: "/placement", label: "Placement", icon: Target },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/resume-checker", label: "Resume Checker", icon: FileScan },
+  { to: "/github", label: "GitHub", icon: Github },
   { to: "/resources", label: "Resources", icon: BookOpen },
   { to: "/profile", label: "Profile", icon: UserIcon },
 ] as const;
