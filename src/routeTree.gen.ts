@@ -17,6 +17,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PlacementRouteImport } from './routes/placement'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as InterviewRouteImport } from './routes/interview'
+import { Route as GithubRouteImport } from './routes/github'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CompilerRouteImport } from './routes/compiler'
 import { Route as CompaniesRouteImport } from './routes/companies'
@@ -67,6 +68,11 @@ const McpRoute = McpRouteImport.update({
 const InterviewRoute = InterviewRouteImport.update({
   id: '/interview',
   path: '/interview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GithubRoute = GithubRouteImport.update({
+  id: '/github',
+  path: '/github',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/companies': typeof CompaniesRoute
   '/compiler': typeof CompilerRoute
   '/dashboard': typeof DashboardRoute
+  '/github': typeof GithubRoute
   '/interview': typeof InterviewRoute
   '/mcp': typeof McpRoute
   '/placement': typeof PlacementRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/companies': typeof CompaniesRoute
   '/compiler': typeof CompilerRoute
   '/dashboard': typeof DashboardRoute
+  '/github': typeof GithubRoute
   '/interview': typeof InterviewRoute
   '/mcp': typeof McpRoute
   '/placement': typeof PlacementRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/companies': typeof CompaniesRoute
   '/compiler': typeof CompilerRoute
   '/dashboard': typeof DashboardRoute
+  '/github': typeof GithubRoute
   '/interview': typeof InterviewRoute
   '/mcp': typeof McpRoute
   '/placement': typeof PlacementRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/companies'
     | '/compiler'
     | '/dashboard'
+    | '/github'
     | '/interview'
     | '/mcp'
     | '/placement'
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/companies'
     | '/compiler'
     | '/dashboard'
+    | '/github'
     | '/interview'
     | '/mcp'
     | '/placement'
@@ -244,6 +255,7 @@ export interface FileRouteTypes {
     | '/companies'
     | '/compiler'
     | '/dashboard'
+    | '/github'
     | '/interview'
     | '/mcp'
     | '/placement'
@@ -266,6 +278,7 @@ export interface RootRouteChildren {
   CompaniesRoute: typeof CompaniesRoute
   CompilerRoute: typeof CompilerRoute
   DashboardRoute: typeof DashboardRoute
+  GithubRoute: typeof GithubRoute
   InterviewRoute: typeof InterviewRoute
   McpRoute: typeof McpRoute
   PlacementRoute: typeof PlacementRoute
@@ -336,6 +349,13 @@ declare module '@tanstack/react-router' {
       path: '/interview'
       fullPath: '/interview'
       preLoaderRoute: typeof InterviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/github': {
+      id: '/github'
+      path: '/github'
+      fullPath: '/github'
+      preLoaderRoute: typeof GithubRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -426,6 +446,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompaniesRoute: CompaniesRoute,
   CompilerRoute: CompilerRoute,
   DashboardRoute: DashboardRoute,
+  GithubRoute: GithubRoute,
   InterviewRoute: InterviewRoute,
   McpRoute: McpRoute,
   PlacementRoute: PlacementRoute,
