@@ -18,6 +18,7 @@ import {
   MessagesSquare,
   Building2,
   Target,
+  Github,
 
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
