@@ -23,7 +23,7 @@ export const Route = createFileRoute("/resources")({
             itemListElement: cat.items.map((item, i) => ({
               "@type": "ListItem",
               position: i + 1,
-              name: item.title,
+              name: item.name,
               url: item.url,
             })),
           })),
