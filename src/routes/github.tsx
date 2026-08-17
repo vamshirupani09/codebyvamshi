@@ -264,6 +264,50 @@ function GithubPage() {
     }
   };
 
+  const exportPortfolio = (mode: "print" | "html" | "markdown") => {
+    if (!review || !reviewedRepo || !conn) return;
+    const doc = {
+      repoFullName: reviewedRepo,
+      repoUrl: `https://github.com/${reviewedRepo}`,
+      review,
+      author: {
+        username: conn.username,
+        name: conn.name,
+        avatar_url: conn.avatar_url,
+        html_url: conn.html_url,
+      },
+    };
+
+    if (mode === "markdown") {
+      void navigator.clipboard.writeText(buildPortfolioMarkdown(doc));
+      toast.success("Portfolio summary copied as markdown");
+      return;
+    }
+
+    const html = buildPortfolioHtml(doc);
+
+    if (mode === "html") {
+      const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${reviewedRepo.replace("/", "-")}-portfolio.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Portfolio page downloaded");
+      return;
+    }
+
+    const win = window.open("", "_blank", "width=900,height=1000");
+    if (!win) {
+      toast.error("Allow pop-ups to export the portfolio page");
+      return;
+    }
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 400);
+  };
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return repos;
