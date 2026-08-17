@@ -15,6 +15,8 @@ import {
   Copy,
   FileText,
   AlertTriangle,
+  Printer,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -31,6 +33,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { askAgentJson } from "@/lib/ai-client";
 import { awardActivity } from "@/lib/gamification";
 import { getGithubProfile, getGithubRepos, getRepoDetail, type GithubRepo } from "@/lib/github.functions";
+import { buildPortfolioHtml, buildPortfolioMarkdown } from "@/lib/portfolio-export";
 
 export const Route = createFileRoute("/github")({
   head: () => ({
@@ -261,6 +264,50 @@ function GithubPage() {
     }
   };
 
+  const exportPortfolio = (mode: "print" | "html" | "markdown") => {
+    if (!review || !reviewedRepo || !conn) return;
+    const doc = {
+      repoFullName: reviewedRepo,
+      repoUrl: `https://github.com/${reviewedRepo}`,
+      review,
+      author: {
+        username: conn.username,
+        name: conn.name,
+        avatar_url: conn.avatar_url,
+        html_url: conn.html_url,
+      },
+    };
+
+    if (mode === "markdown") {
+      void navigator.clipboard.writeText(buildPortfolioMarkdown(doc));
+      toast.success("Portfolio summary copied as markdown");
+      return;
+    }
+
+    const html = buildPortfolioHtml(doc);
+
+    if (mode === "html") {
+      const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${reviewedRepo.replace("/", "-")}-portfolio.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Portfolio page downloaded");
+      return;
+    }
+
+    const win = window.open("", "_blank", "width=900,height=1000");
+    if (!win) {
+      toast.error("Allow pop-ups to export the portfolio page");
+      return;
+    }
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 400);
+  };
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return repos;
@@ -417,13 +464,27 @@ function GithubPage() {
           <section className="space-y-4">
             <Card className="p-5 flex flex-col sm:flex-row gap-5 items-start">
               <ScoreRing score={Math.round(review.health_score ?? 0)} />
-              <div className="space-y-2 min-w-0">
+              <div className="space-y-2 min-w-0 flex-1">
                 <p className="font-display text-xl">{reviewedRepo}</p>
                 <Badge variant="secondary">{review.verdict}</Badge>
                 <p className="text-sm text-muted-foreground">{review.summary}</p>
                 {review.recruiter_pitch && (
                   <p className="text-sm border-l-2 border-primary pl-3 italic">{review.recruiter_pitch}</p>
                 )}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Button size="sm" onClick={() => exportPortfolio("print")}>
+                    <Printer className="size-4" /> Save as PDF
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => exportPortfolio("html")}>
+                    <Download className="size-4" /> Download page
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => exportPortfolio("markdown")}>
+                    <Copy className="size-4" /> Copy markdown
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  One-page hiring-ready summary with score, breakdown, highlights and next steps.
+                </p>
               </div>
             </Card>
 
