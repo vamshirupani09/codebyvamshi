@@ -1,4 +1,4 @@
-import { seoHead } from "@/lib/seo";
+import { seoHead, SITE_URL } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { ExternalLink, Bookmark, BookmarkCheck, Check } from "lucide-react";
@@ -22,7 +22,28 @@ interface Assignment {
 }
 
 export const Route = createFileRoute("/assignments")({
-  head: () => seoHead({ path: "/assignments", title: "Weekly Coding Assignments | Codex", description: "Work through weekly coding problem sets, mark them complete, bookmark favourites and keep a steady DSA practice streak going." }),
+  head: () => ({
+    ...seoHead({
+      path: "/assignments",
+      title: "Weekly Coding Assignments | Codex",
+      description:
+        "Work through weekly coding problem sets, mark them complete, bookmark favourites and keep a steady DSA practice streak going.",
+    }),
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Course",
+          name: "Weekly Coding Assignments",
+          url: `${SITE_URL}/assignments`,
+          description:
+            "A week-by-week set of curated coding problems that builds data structures and algorithms skills for placement interviews.",
+          provider: { "@type": "Organization", name: "Codex", url: SITE_URL },
+        }),
+      },
+    ],
+  }),
   component: () => (
     <DashboardLayout>
       <Assignments />
