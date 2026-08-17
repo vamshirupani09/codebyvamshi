@@ -15,6 +15,8 @@ import {
   Copy,
   FileText,
   AlertTriangle,
+  Printer,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -31,6 +33,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { askAgentJson } from "@/lib/ai-client";
 import { awardActivity } from "@/lib/gamification";
 import { getGithubProfile, getGithubRepos, getRepoDetail, type GithubRepo } from "@/lib/github.functions";
+import { buildPortfolioHtml, buildPortfolioMarkdown } from "@/lib/portfolio-export";
 
 export const Route = createFileRoute("/github")({
   head: () => ({
