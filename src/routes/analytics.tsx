@@ -1,3 +1,4 @@
+import { seoHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -34,23 +35,15 @@ import {
 } from "@/lib/gamification";
 
 export const Route = createFileRoute("/analytics")({
-  head: () => ({
-    meta: [
-      { title: "Progress Analytics | Codex AI Coding Assistant" },
-      {
-        name: "description",
-        content:
-          "Track XP, coins, streaks, badges, topic mastery, language usage and a daily activity heatmap across your coding practice.",
-      },
-      { property: "og:title", content: "Progress Analytics | Codex AI Coding Assistant" },
-      {
-        property: "og:description",
-        content: "XP, coins, streaks, badges, leaderboard and interactive charts for your coding journey.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+  head: () =>
+    seoHead({
+      path: "/analytics",
+      title: "Progress Analytics | Codex",
+      description:
+        "Track XP, coins, streaks, badges, topic mastery, language usage and a daily activity heatmap across your coding practice.",
+      ogTitle: "Progress Analytics | Codex",
+      ogDescription: "XP, coins, streaks, badges, leaderboard and interactive charts for your coding journey.",
+    }),
   component: () => (
     <DashboardLayout>
       <Analytics />

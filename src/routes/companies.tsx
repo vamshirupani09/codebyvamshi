@@ -1,3 +1,4 @@
+import { seoHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Building2, Search, ListChecks, Code2, MessageSquareQuote, Route as RouteIcon, HelpCircle, Sparkles } from "lucide-react";
@@ -11,16 +12,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { COMPANIES, type CompanyProfile } from "@/lib/companies";
 
 export const Route = createFileRoute("/companies")({
-  head: () => ({
-    meta: [
-      { title: "Company Preparation Hub | Codex AI Coding Assistant" },
-      { name: "description", content: "Hiring process, DSA topics, coding questions, HR questions and 8-week roadmaps for Google, Microsoft, Amazon, TCS, Infosys and 13 more companies." },
-      { property: "og:title", content: "Company Preparation Hub | Codex" },
-      { property: "og:description", content: "Company-wise interview preparation for 18 top tech recruiters." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: () =>
+    seoHead({
+      path: "/companies",
+      title: "Company Interview Prep Hub | Codex",
+      description:
+        "Hiring process, DSA topics, coding questions, HR questions and 8-week roadmaps for Google, Microsoft, Amazon, TCS, Infosys and 13 more companies.",
+      ogTitle: "Company Interview Prep Hub | Codex",
+      ogDescription: "Company-wise interview preparation for 18 top tech recruiters.",
+    }),
   component: () => (
     <DashboardLayout>
       <Companies />
