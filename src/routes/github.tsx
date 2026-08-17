@@ -417,13 +417,27 @@ function GithubPage() {
           <section className="space-y-4">
             <Card className="p-5 flex flex-col sm:flex-row gap-5 items-start">
               <ScoreRing score={Math.round(review.health_score ?? 0)} />
-              <div className="space-y-2 min-w-0">
+              <div className="space-y-2 min-w-0 flex-1">
                 <p className="font-display text-xl">{reviewedRepo}</p>
                 <Badge variant="secondary">{review.verdict}</Badge>
                 <p className="text-sm text-muted-foreground">{review.summary}</p>
                 {review.recruiter_pitch && (
                   <p className="text-sm border-l-2 border-primary pl-3 italic">{review.recruiter_pitch}</p>
                 )}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Button size="sm" onClick={() => exportPortfolio("print")}>
+                    <Printer className="size-4" /> Save as PDF
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => exportPortfolio("html")}>
+                    <Download className="size-4" /> Download page
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => exportPortfolio("markdown")}>
+                    <Copy className="size-4" /> Copy markdown
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  One-page hiring-ready summary with score, breakdown, highlights and next steps.
+                </p>
               </div>
             </Card>
 
