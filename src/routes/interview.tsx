@@ -1,3 +1,4 @@
+import { seoHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -22,16 +23,15 @@ import { askAgentJson } from "@/lib/ai-client";
 import { awardActivity } from "@/lib/gamification";
 
 export const Route = createFileRoute("/interview")({
-  head: () => ({
-    meta: [
-      { title: "AI Mock Interview | Codex AI Coding Assistant" },
-      { name: "description", content: "Practise HR, technical, coding, system design and behavioural interviews with an AI interviewer that scores every answer and generates a report." },
-      { property: "og:title", content: "AI Mock Interview | Codex" },
-      { property: "og:description", content: "Realistic AI mock interviews with per-answer scoring and a final report." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: () =>
+    seoHead({
+      path: "/interview",
+      title: "AI Mock Interview Practice | Codex",
+      description:
+        "Practise HR, technical, coding, system design and behavioural interviews with an AI interviewer that scores every answer and generates a report.",
+      ogTitle: "AI Mock Interview Practice | Codex",
+      ogDescription: "Realistic AI mock interviews with per-answer scoring and a final report.",
+    }),
   component: () => (
     <DashboardLayout>
       <Interview />

@@ -1,0 +1,21 @@
+# Codex — Multi-Agent AI Coding Assistant
+
+> Codex helps students prepare for placements with an online compiler, a multi-agent AI coding assistant, a DSA roadmap, mock interviews, company prep and resume scoring.
+
+## Pages
+
+- [Home](/): Overview of Codex and sign-in for the learning platform.
+- [Online Compiler](/compiler): Run Java, Python, C, C++, JavaScript, TypeScript, Go, Rust and Kotlin code in the browser with AI code review.
+- [AI Assistant](/assistant): Coder, debugger, test-case, explainer, complexity, optimizer and hint agents.
+- [DSA Roadmap](/roadmap): Topic-by-topic data structures and algorithms learning path with progress tracking.
+- [Assignments](/assignments): Weekly coding problem sets with completion tracking and bookmarks.
+- [Mock Interview](/interview): AI-run HR, technical, coding, system design and behavioural interviews with scored reports.
+- [Company Prep](/companies): Hiring processes, question banks and roadmaps for 18 top tech recruiters.
+- [Placement Readiness](/placement): A combined readiness score across DSA, resume, interviews and coding practice.
+- [Resume Checker](/resume-checker): ATS-style resume scoring with keyword gaps and rewrite suggestions.
+- [GitHub Review](/github): AI repository health score, README suggestions and a hiring-ready portfolio export.
+- [Resources](/resources): Curated learning links for DSA and interview preparation.
+
+## Optional
+
+- [Progress Analytics](/analytics): Personal XP, streak and activity dashboards (requires sign-in).

@@ -1,3 +1,4 @@
+import { seoHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Target, ShieldCheck, TrendingUp, Building2, Loader2 } from "lucide-react";
@@ -13,16 +14,15 @@ import { ROADMAP } from "@/lib/dsa-data";
 import { COMPANIES } from "@/lib/companies";
 
 export const Route = createFileRoute("/placement")({
-  head: () => ({
-    meta: [
-      { title: "Placement Readiness Dashboard | Codex AI Coding Assistant" },
-      { name: "description", content: "One score that combines your DSA progress, resume score, mock interview performance, coding activity and assignments into placement readiness." },
-      { property: "og:title", content: "Placement Readiness | Codex" },
-      { property: "og:description", content: "Track how job-ready you are across DSA, resume, interviews and coding practice." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: () =>
+    seoHead({
+      path: "/placement",
+      title: "Placement Readiness Score | Codex",
+      description:
+        "One score that combines your DSA progress, resume score, mock interview performance, coding activity and assignments into placement readiness.",
+      ogTitle: "Placement Readiness Score | Codex",
+      ogDescription: "Track how job-ready you are across DSA, resume, interviews and coding practice.",
+    }),
   component: () => (
     <DashboardLayout>
       <Placement />

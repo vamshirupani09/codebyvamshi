@@ -1,3 +1,4 @@
+import { seoHead, SITE_URL } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
@@ -11,6 +12,26 @@ import { ROADMAP } from "@/lib/dsa-data";
 import { awardActivity } from "@/lib/gamification";
 
 export const Route = createFileRoute("/roadmap")({
+  head: () => ({
+    ...seoHead({ path: "/roadmap", title: "DSA Learning Roadmap | Codex", description: "Follow a topic-by-topic data structures and algorithms roadmap — arrays to graphs and dynamic programming — and track every topic you complete.", ogTitle: "DSA Learning Roadmap | Codex", ogDescription: "A topic-by-topic DSA roadmap from arrays to dynamic programming, with progress tracking." }),
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "DSA Learning Roadmap",
+          url: `${SITE_URL}/roadmap`,
+          itemListElement: ROADMAP.map((r, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: r.topic,
+            description: r.summary,
+          })),
+        }),
+      },
+    ],
+  }),
   component: () => (
     <DashboardLayout>
       <Roadmap />
@@ -70,7 +91,7 @@ function Roadmap() {
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <span className="text-xs text-muted-foreground">Step {i + 1}</span>
-                  <h3 className="font-display text-xl">{r.topic}</h3>
+                  <h2 className="font-display text-xl">{r.topic}</h2>
                 </div>
                 <Button size="sm" variant={completed ? "default" : "outline"} onClick={() => toggle(r.topic)}>
                   {completed ? <><Check className="size-3.5 mr-1" /> Done</> : "Mark done"}

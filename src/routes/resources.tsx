@@ -1,3 +1,4 @@
+import { seoHead, SITE_URL } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
@@ -5,6 +6,31 @@ import { Card } from "@/components/ui/card";
 import { RESOURCES } from "@/lib/dsa-data";
 
 export const Route = createFileRoute("/resources")({
+  head: () => ({
+    ...seoHead({ path: "/resources", title: "Curated DSA & Interview Resources | Codex", description: "A curated library of data structures, algorithms, system design and interview preparation resources hand-picked for placement candidates.", ogTitle: "Curated DSA & Interview Resources | Codex", ogDescription: "Hand-picked DSA, system design and interview preparation links for placement prep." }),
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "DSA Resources",
+          url: `${SITE_URL}/resources`,
+          description: "Curated books, sites and channels for data structures, algorithms and interview preparation.",
+          hasPart: RESOURCES.map((cat) => ({
+            "@type": "ItemList",
+            name: cat.category,
+            itemListElement: cat.items.map((item, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              name: item.name,
+              url: item.url,
+            })),
+          })),
+        }),
+      },
+    ],
+  }),
   component: () => (
     <DashboardLayout>
       <Resources />

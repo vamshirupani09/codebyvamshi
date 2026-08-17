@@ -28,12 +28,24 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Codex — Multi-Agent AI Coding Assistant" },
-      { name: "description", content: "Practice DSA,Multi-agent AI coding assistant." },
+      {
+        name: "description",
+        content:
+          "Codex is a multi-agent AI coding assistant for placement prep: online compiler, DSA roadmap, mock interviews, resume scoring and analytics.",
+      },
       { property: "og:title", content: "Codex — Multi-Agent AI Coding Assistant" },
-      { property: "og:description", content: "Practice DSA,Multi-agent AI coding assistant." },
+      {
+        property: "og:description",
+        content:
+          "Online compiler, DSA roadmap, AI coding agents, mock interviews and resume scoring in one placement prep platform.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:title", content: "Codex — Multi-Agent AI Coding Assistant" },
-      { name: "twitter:description", content: "Practice DSA,Multi-agent AI coding assistant." },
+      {
+        name: "twitter:description",
+        content:
+          "Online compiler, DSA roadmap, AI coding agents, mock interviews and resume scoring in one placement prep platform.",
+      },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/96f18f6a-f2fd-42e3-99ff-487ee4130664" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/96f18f6a-f2fd-42e3-99ff-487ee4130664" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -45,6 +57,31 @@ export const Route = createRootRoute({
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://codebyvamshi.lovable.app/#organization",
+              name: "Codex",
+              url: "https://codebyvamshi.lovable.app",
+              description:
+                "Multi-agent AI coding assistant and placement preparation platform for students.",
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://codebyvamshi.lovable.app/#website",
+              name: "Codex",
+              url: "https://codebyvamshi.lovable.app",
+              publisher: { "@id": "https://codebyvamshi.lovable.app/#organization" },
+            },
+          ],
+        }),
       },
     ],
   }),

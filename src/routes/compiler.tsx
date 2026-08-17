@@ -1,3 +1,4 @@
+import { seoHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import Editor, { type OnMount } from "@monaco-editor/react";
@@ -16,22 +17,15 @@ import { runCode } from "@/lib/judge0.functions";
 import { awardActivity } from "@/lib/gamification";
 
 export const Route = createFileRoute("/compiler")({
-  head: () => ({
-    meta: [
-      { title: "Online Compiler | Codex AI Coding Assistant" },
-      {
-        name: "description",
-        content: "Run Java, Python, C, C++, JavaScript, TypeScript, Go, Rust, and Kotlin code with Codex AI Coding Assistant.",
-      },
-      { property: "og:title", content: "Online Compiler | Codex AI Coding Assistant" },
-      {
-        property: "og:description",
-        content: "Run code in 9 languages with runtime status, editor themes, stdin, upload, download, and AI-assisted learning tools.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+  head: () =>
+    seoHead({
+      path: "/compiler",
+      title: "Online Compiler for 9 Languages | Codex",
+      description:
+        "Run Java, Python, C, C++, JavaScript, TypeScript, Go, Rust and Kotlin in the browser with stdin, editor themes and AI code review.",
+      ogTitle: "Online Compiler for 9 Languages | Codex",
+      ogDescription: "Run code in 9 languages with stdin, editor themes, upload, download and AI code review.",
+    }),
   component: () => (
     <DashboardLayout>
       <Compiler />

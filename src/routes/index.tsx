@@ -1,3 +1,4 @@
+import { seoHead } from "@/lib/seo";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -15,6 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import heroImg from "@/assets/hero-illustration.jpg";
 
 export const Route = createFileRoute("/")({
+  head: () => seoHead({ path: "/", title: "Codex — AI Coding Assistant & DSA Placement Prep", description: "Practice DSA, run code in 9 languages, take AI mock interviews and score your resume — one placement prep platform powered by multi-agent AI.", ogTitle: "Codex — AI Coding Assistant & DSA Placement Prep", ogDescription: "Compiler, DSA roadmap, AI agents, mock interviews and resume scoring in one placement prep platform." }),
   validateSearch: (s: Record<string, unknown>): { next?: string } => {
     const n = typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : undefined;
     return n ? { next: n } : {};

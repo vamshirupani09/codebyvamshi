@@ -1,3 +1,4 @@
+import { seoHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -36,23 +37,15 @@ import { getGithubProfile, getGithubRepos, getRepoDetail, type GithubRepo } from
 import { buildPortfolioHtml, buildPortfolioMarkdown } from "@/lib/portfolio-export";
 
 export const Route = createFileRoute("/github")({
-  head: () => ({
-    meta: [
-      { title: "GitHub Repository Review & Health Score | Codex" },
-      {
-        name: "description",
-        content:
-          "Connect GitHub, import your repositories and get an AI repository review with a health score, issue list and a rewritten README tailored to recruiters.",
-      },
-      { property: "og:title", content: "GitHub Repository Review & Health Score | Codex" },
-      {
-        property: "og:description",
-        content: "Import your GitHub repos and get an AI health score plus README suggestions.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: () =>
+    seoHead({
+      path: "/github",
+      title: "GitHub Repo Review & Health Score | Codex",
+      description:
+        "Connect GitHub, import your repositories and get an AI review with a health score, issue list, rewritten README and a hiring-ready portfolio export.",
+      ogTitle: "GitHub Repo Review & Health Score | Codex",
+      ogDescription: "Import your GitHub repos and get an AI health score, README suggestions and a portfolio export.",
+    }),
   component: GithubPage,
 });
 
