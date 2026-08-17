@@ -1,3 +1,4 @@
+import { seoHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { ExternalLink, Bookmark, BookmarkCheck, Check } from "lucide-react";
@@ -21,6 +22,7 @@ interface Assignment {
 }
 
 export const Route = createFileRoute("/assignments")({
+  head: () => seoHead({ path: "/assignments", title: "Weekly Coding Assignments | Codex", description: "Work through weekly coding problem sets, mark them complete, bookmark favourites and keep a steady DSA practice streak going." }),
   component: () => (
     <DashboardLayout>
       <Assignments />

@@ -1,3 +1,4 @@
+import { seoHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
@@ -5,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { RESOURCES } from "@/lib/dsa-data";
 
 export const Route = createFileRoute("/resources")({
+  head: () => seoHead({ path: "/resources", title: "Curated DSA & Interview Resources | Codex", description: "A curated library of data structures, algorithms, system design and interview preparation resources hand-picked for placement candidates.", ogTitle: "Curated DSA & Interview Resources | Codex", ogDescription: "Hand-picked DSA, system design and interview preparation links for placement prep." }),
   component: () => (
     <DashboardLayout>
       <Resources />

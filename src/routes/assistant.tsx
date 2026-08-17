@@ -1,3 +1,4 @@
+import { seoHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -12,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { awardActivity } from "@/lib/gamification";
 
 export const Route = createFileRoute("/assistant")({
+  head: () => seoHead({ path: "/assistant", title: "Multi-Agent AI Coding Assistant | Codex", description: "Ask seven specialised AI agents to write, debug, test, explain, optimise and analyse the complexity of your code, or nudge you with a hint.", ogTitle: "Multi-Agent AI Coding Assistant | Codex", ogDescription: "Coder, debugger, test-case, explainer, complexity, optimiser and hint agents in one chat." }),
   component: () => (
     <DashboardLayout>
       <Assistant />

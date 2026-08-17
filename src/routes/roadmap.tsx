@@ -1,3 +1,4 @@
+import { seoHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
@@ -11,6 +12,7 @@ import { ROADMAP } from "@/lib/dsa-data";
 import { awardActivity } from "@/lib/gamification";
 
 export const Route = createFileRoute("/roadmap")({
+  head: () => seoHead({ path: "/roadmap", title: "DSA Learning Roadmap | Codex", description: "Follow a topic-by-topic data structures and algorithms roadmap — arrays to graphs and dynamic programming — and track every topic you complete.", ogTitle: "DSA Learning Roadmap | Codex", ogDescription: "A topic-by-topic DSA roadmap from arrays to dynamic programming, with progress tracking." }),
   component: () => (
     <DashboardLayout>
       <Roadmap />

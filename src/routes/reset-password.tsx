@@ -1,3 +1,4 @@
+import { seoHead } from "@/lib/seo";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -8,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/reset-password")({
+  head: () => seoHead({ path: "/reset-password", title: "Reset Your Password | Codex", description: "Choose a new password for your Codex account and get back to your DSA practice, AI assistant and interview preparation.", noindex: true }),
   component: ResetPassword,
 });
 

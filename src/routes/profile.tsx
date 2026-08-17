@@ -1,3 +1,4 @@
+import { seoHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/profile")({
+  head: () => seoHead({ path: "/profile", title: "Your Profile & Bookmarks | Codex", description: "Manage your Codex account details, review saved problem bookmarks and keep your placement preparation profile up to date.", noindex: true }),
   component: () => (
     <DashboardLayout>
       <Profile />

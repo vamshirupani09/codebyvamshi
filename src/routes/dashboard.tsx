@@ -1,3 +1,4 @@
+import { seoHead } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Code2, Bot, Map, CalendarDays, BookOpen, Trophy, BarChart3 } from "lucide-react";
@@ -9,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { ROADMAP } from "@/lib/dsa-data";
 
 export const Route = createFileRoute("/dashboard")({
+  head: () => seoHead({ path: "/dashboard", title: "Your Learning Dashboard | Codex", description: "See your DSA progress, pending assignments, streaks and quick links to the compiler, AI assistant and analytics in one dashboard.", noindex: true }),
   component: () => (
     <DashboardLayout>
       <Dashboard />
