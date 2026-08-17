@@ -72,7 +72,7 @@ function Roadmap() {
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <span className="text-xs text-muted-foreground">Step {i + 1}</span>
-                  <h3 className="font-display text-xl">{r.topic}</h3>
+                  <h2 className="font-display text-xl">{r.topic}</h2>
                 </div>
                 <Button size="sm" variant={completed ? "default" : "outline"} onClick={() => toggle(r.topic)}>
                   {completed ? <><Check className="size-3.5 mr-1" /> Done</> : "Mark done"}

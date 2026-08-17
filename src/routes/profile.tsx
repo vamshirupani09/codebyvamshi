@@ -84,7 +84,11 @@ function Profile() {
                 <a href={b.problem_url} target="_blank" rel="noreferrer" className="text-sm text-primary inline-flex items-center gap-1 hover:underline">
                   {b.problem_title} <ExternalLink className="size-3" />
                 </a>
-                <button onClick={() => removeBookmark(b.id)} className="text-muted-foreground hover:text-destructive">
+                <button
+                  onClick={() => removeBookmark(b.id)}
+                  aria-label={`Remove bookmark ${b.problem_title}`}
+                  className="text-muted-foreground hover:text-destructive"
+                >
                   <BookmarkX className="size-4" />
                 </button>
               </li>
