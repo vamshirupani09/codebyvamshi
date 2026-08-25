@@ -23,8 +23,8 @@ import { askAgentJson } from "@/lib/ai-client";
 import { awardActivity } from "@/lib/gamification";
 
 export const Route = createFileRoute("/interview")({
-  head: () =>
-    seoHead({
+  head: () => ({
+    ...seoHead({
       path: "/interview",
       title: "AI Mock Interview Practice | Codex",
       description:
@@ -32,6 +32,32 @@ export const Route = createFileRoute("/interview")({
       ogTitle: "AI Mock Interview Practice | Codex",
       ogDescription: "Realistic AI mock interviews with per-answer scoring and a final report.",
     }),
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Course",
+          name: "AI Mock Interview Practice",
+          url: `${SITE_URL}/interview`,
+          description:
+            "Turn-based AI mock interviews across HR, technical, coding, system design and behavioural rounds with per-answer scoring and a final report.",
+          provider: { "@type": "Organization", name: "Codex", url: SITE_URL },
+          hasCourseInstance: [
+            "HR",
+            "Technical",
+            "Coding",
+            "System Design",
+            "Behavioural",
+          ].map((name) => ({
+            "@type": "CourseInstance",
+            name: `${name} mock interview`,
+            courseMode: "online",
+ійні          })),
+        }),
+      },
+    ],
+  }),
   component: () => (
     <DashboardLayout>
       <Interview />
