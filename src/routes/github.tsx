@@ -1,4 +1,4 @@
-import { seoHead } from "@/lib/seo";
+import { seoHead, SITE_URL } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";

@@ -1,4 +1,4 @@
-import { seoHead } from "@/lib/seo";
+import { seoHead, SITE_URL } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";

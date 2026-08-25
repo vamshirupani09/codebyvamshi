@@ -1,4 +1,4 @@
-import { seoHead } from "@/lib/seo";
+import { seoHead, SITE_URL } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Target, ShieldCheck, TrendingUp, Building2, Loader2 } from "lucide-react";
