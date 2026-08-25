@@ -22,6 +22,7 @@ export const Route = createFileRoute("/placement")({
         "One score that combines your DSA progress, resume score, mock interview performance, coding activity and assignments into placement readiness.",
       ogTitle: "Placement Readiness Score | Codex",
       ogDescription: "Track how job-ready you are across DSA, resume, interviews and coding practice.",
+      image: "/og/placement.jpg",
     }),
     scripts: [
       {
