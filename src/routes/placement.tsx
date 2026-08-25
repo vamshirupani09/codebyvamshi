@@ -14,8 +14,8 @@ import { ROADMAP } from "@/lib/dsa-data";
 import { COMPANIES } from "@/lib/companies";
 
 export const Route = createFileRoute("/placement")({
-  head: () =>
-    seoHead({
+  head: () => ({
+    ...seoHead({
       path: "/placement",
       title: "Placement Readiness Score | Codex",
       description:
@@ -23,6 +23,30 @@ export const Route = createFileRoute("/placement")({
       ogTitle: "Placement Readiness Score | Codex",
       ogDescription: "Track how job-ready you are across DSA, resume, interviews and coding practice.",
     }),
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          name: "Placement Readiness Dashboard",
+          url: `${SITE_URL}/placement`,
+          applicationCategory: "EducationalApplication",
+          operatingSystem: "Web",
+          description:
+            "A weighted readiness score combining DSA progress, resume score, mock interviews, coding activity and assignments, with target company recommendations.",
+          featureList: [
+            "Weighted placement readiness score",
+            "DSA progress tracking",
+            "Resume score integration",
+            "Mock interview performance",
+            "Target company recommendations",
+          ],
+          provider: { "@type": "Organization", name: "Codex", url: SITE_URL },
+        }),
+      },
+    ],
+  }),
   component: () => (
     <DashboardLayout>
       <Placement />
