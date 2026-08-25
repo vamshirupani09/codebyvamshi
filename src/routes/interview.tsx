@@ -53,7 +53,7 @@ export const Route = createFileRoute("/interview")({
             "@type": "CourseInstance",
             name: `${name} mock interview`,
             courseMode: "online",
-ійні          })),
+          })),
         }),
       },
     ],
