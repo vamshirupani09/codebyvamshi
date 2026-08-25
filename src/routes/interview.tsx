@@ -31,6 +31,7 @@ export const Route = createFileRoute("/interview")({
         "Practise HR, technical, coding, system design and behavioural interviews with an AI interviewer that scores every answer and generates a report.",
       ogTitle: "AI Mock Interview Practice | Codex",
       ogDescription: "Realistic AI mock interviews with per-answer scoring and a final report.",
+      image: "/og/interview.jpg",
     }),
     scripts: [
       {

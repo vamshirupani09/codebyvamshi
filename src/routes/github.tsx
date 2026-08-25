@@ -45,6 +45,7 @@ export const Route = createFileRoute("/github")({
         "Connect GitHub, import your repositories and get an AI review with a health score, issue list, rewritten README and a hiring-ready portfolio export.",
       ogTitle: "GitHub Repo Review & Health Score | Codex",
       ogDescription: "Import your GitHub repos and get an AI health score, README suggestions and a portfolio export.",
+      image: "/og/github.jpg",
     }),
     scripts: [
       {
