@@ -1,4 +1,4 @@
-import { seoHead } from "@/lib/seo";
+import { seoHead, SITE_URL } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -37,8 +37,8 @@ import { getGithubProfile, getGithubRepos, getRepoDetail, type GithubRepo } from
 import { buildPortfolioHtml, buildPortfolioMarkdown } from "@/lib/portfolio-export";
 
 export const Route = createFileRoute("/github")({
-  head: () =>
-    seoHead({
+  head: () => ({
+    ...seoHead({
       path: "/github",
       title: "GitHub Repo Review & Health Score | Codex",
       description:
@@ -46,6 +46,30 @@ export const Route = createFileRoute("/github")({
       ogTitle: "GitHub Repo Review & Health Score | Codex",
       ogDescription: "Import your GitHub repos and get an AI health score, README suggestions and a portfolio export.",
     }),
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          name: "GitHub Repository Review",
+          url: `${SITE_URL}/github`,
+          applicationCategory: "DeveloperApplication",
+          operatingSystem: "Web",
+          description:
+            "Import GitHub repositories and generate an AI repository review with a 0-100 health score, README suggestions and a hiring-ready portfolio export.",
+          featureList: [
+            "GitHub profile and repository import",
+            "AI repository health score",
+            "README suggestions",
+            "Recruiter pitch generation",
+            "One-page portfolio export",
+          ],
+          provider: { "@type": "Organization", name: "Codex", url: SITE_URL },
+        }),
+      },
+    ],
+  }),
   component: GithubPage,
 });
 
