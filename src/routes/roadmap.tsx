@@ -88,12 +88,12 @@ function Roadmap() {
           const completed = done.has(r.topic);
           return (
             <Card key={r.topic} className={`p-5 transition ${completed ? "border-primary bg-primary/5" : ""}`}>
-              <div className="flex items-start justify-between gap-2">
-                <div>
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+                <div className="min-w-0">
                   <span className="text-xs text-muted-foreground">Step {i + 1}</span>
                   <h2 className="font-display text-xl">{r.topic}</h2>
                 </div>
-                <Button size="sm" variant={completed ? "default" : "outline"} onClick={() => toggle(r.topic)}>
+                <Button size="sm" className="shrink-0" variant={completed ? "default" : "outline"} aria-pressed={completed} onClick={() => toggle(r.topic)}>
                   {completed ? <><Check className="size-3.5 mr-1" /> Done</> : "Mark done"}
                 </Button>
               </div>

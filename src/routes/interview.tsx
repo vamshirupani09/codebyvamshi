@@ -285,12 +285,12 @@ function Interview() {
             </Select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Target role</label>
-            <Input value={role} onChange={(e) => setRole(e.target.value)} maxLength={80} placeholder="Software Engineer" />
+            <label htmlFor="interview-role" className="text-xs text-muted-foreground">Target role</label>
+            <Input id="interview-role" value={role} onChange={(e) => setRole(e.target.value)} maxLength={80} placeholder="Software Engineer" />
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Company (optional)</label>
-            <Input value={company} onChange={(e) => setCompany(e.target.value)} maxLength={60} placeholder="Google" />
+            <label htmlFor="interview-company" className="text-xs text-muted-foreground">Company (optional)</label>
+            <Input id="interview-company" value={company} onChange={(e) => setCompany(e.target.value)} maxLength={60} placeholder="Google" />
           </div>
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">Difficulty</label>
@@ -319,7 +319,7 @@ function Interview() {
 
         <Card className="p-4 lg:col-span-2 flex flex-col min-h-[26rem]">
           <p className="text-sm font-medium mb-2 flex items-center gap-2"><MessageSquare className="size-4" /> Interview room</p>
-          <ScrollArea className="flex-1 pr-3 max-h-[26rem]">
+          <ScrollArea className="flex-1 pr-3 lg:max-h-[26rem]">
             {turns.length === 0 && !busy && (
               <p className="text-sm text-muted-foreground">Configure the round on the left, then start. The AI asks one question at a time.</p>
             )}

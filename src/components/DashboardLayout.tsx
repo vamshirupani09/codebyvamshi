@@ -19,7 +19,7 @@ import {
   Building2,
   Target,
   Github,
-
+  Trophy,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -54,6 +54,14 @@ const nav = [
   { to: "/github", label: "GitHub", icon: Github },
   { to: "/resources", label: "Resources", icon: BookOpen },
   { to: "/profile", label: "Profile", icon: UserIcon },
+] as const;
+
+const mobileNav = [
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/assistant", label: "AI Chat", icon: Bot },
+  { to: "/compiler", label: "Compiler", icon: Code2 },
+  { to: "/assignments", label: "Assignments", icon: CalendarDays },
+  { to: "/analytics", label: "Leaderboard", icon: Trophy },
 ] as const;
 
 
@@ -108,7 +116,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => data && setStats(data as unknown as UserStats));
-  }, [user, location.pathname]);
+  }, [user]);
 
 
   const unread = notifs.filter((n) => !n.read).length;
@@ -122,8 +130,14 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-muted-foreground text-sm">Loading…</div>
+      <div className="min-h-screen bg-background" aria-busy="true" aria-label="Loading your workspace">
+        <div className="h-16 border-b border-border bg-background/80" />
+        <div className="mx-auto grid max-w-7xl gap-4 p-4 md:grid-cols-3 md:p-8">
+          <div className="h-28 animate-pulse rounded-lg bg-muted md:col-span-3" />
+          {[0, 1, 2, 3, 4, 5].map((item) => (
+            <div key={item} className="h-36 animate-pulse rounded-lg bg-muted" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -148,11 +162,11 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-20 flex items-center gap-2 sm:gap-4 border-b border-border bg-background/80 backdrop-blur px-3 sm:px-4 md:px-8 h-16">
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
+              <Button variant="ghost" size="icon" className="size-11 md:hidden" aria-label="Open all navigation">
                 <Menu className="size-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 bg-sidebar p-4">
+            <SheetContent side="left" className="w-72 overflow-y-auto bg-sidebar p-4">
               <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-2 py-3">
                 <div className="size-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
                   <Sparkles className="size-4" />
@@ -186,7 +200,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative size-11" aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}>
                 <Bell className="size-5" />
                 {unread > 0 && (
                   <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-destructive" />
@@ -197,9 +211,9 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
               <div className="flex items-center justify-between p-3 border-b">
                 <span className="font-display text-sm">Notifications</span>
                 {unread > 0 && (
-                  <button className="text-xs text-primary hover:underline" onClick={markAllRead}>
+                  <Button variant="link" size="sm" className="h-9 px-1 text-xs" onClick={markAllRead}>
                     Mark all read
-                  </button>
+                  </Button>
                 )}
               </div>
               <ScrollArea className="h-72">
@@ -248,8 +262,30 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
           </DropdownMenu>
         </header>
 
-        <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto">{children}</main>
+        <main className="mx-auto w-full max-w-7xl flex-1 p-4 pb-28 md:p-8">{children}</main>
       </div>
+      <nav
+        aria-label="Primary mobile navigation"
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border bg-background/95 px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur md:hidden"
+      >
+        {mobileNav.map((item) => {
+          const active = location.pathname === item.to;
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              aria-current={active ? "page" : undefined}
+              className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-md px-1 text-[10px] transition-colors ${
+                active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <Icon className="size-5 shrink-0" />
+              <span className="w-full truncate text-center">{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
       <AIMentor />
     </div>
   );

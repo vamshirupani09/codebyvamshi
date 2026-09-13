@@ -147,14 +147,14 @@ export function AIMentor() {
         <button
           onClick={() => setOpen(true)}
           aria-label="Open Codex Mentor"
-          className="fixed bottom-6 right-6 z-40 size-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 transition"
+          className="fixed bottom-24 right-4 z-30 size-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 transition md:bottom-6 md:right-6 md:z-40"
         >
           <MessageCircle className="size-6" />
         </button>
       )}
 
       {open && (
-        <Card className="fixed bottom-6 right-6 z-40 w-[min(92vw,400px)] h-[min(75vh,600px)] flex flex-col shadow-2xl overflow-hidden">
+        <Card className="fixed bottom-24 right-2 z-50 flex h-[min(70dvh,600px)] w-[calc(100vw-1rem)] flex-col overflow-hidden shadow-2xl sm:right-4 sm:w-[min(92vw,400px)] md:bottom-6 md:right-6 md:h-[min(75vh,600px)]">
           <div className="flex items-center justify-between px-4 py-3 border-b bg-primary text-primary-foreground">
             <div className="flex items-center gap-2">
               <div className="size-7 rounded-full bg-primary-foreground/20 flex items-center justify-center">
@@ -166,10 +166,10 @@ export function AIMentor() {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <Button size="icon" variant="ghost" className="size-7 hover:bg-primary-foreground/20" onClick={clear} title="Clear history">
+              <Button size="icon" variant="ghost" className="size-10 hover:bg-primary-foreground/20" onClick={clear} title="Clear history" aria-label="Clear mentor history">
                 <Trash2 className="size-3.5" />
               </Button>
-              <Button size="icon" variant="ghost" className="size-7 hover:bg-primary-foreground/20" onClick={() => setOpen(false)}>
+              <Button size="icon" variant="ghost" className="size-10 hover:bg-primary-foreground/20" onClick={() => setOpen(false)} aria-label="Close mentor">
                 <X className="size-4" />
               </Button>
             </div>
@@ -238,7 +238,7 @@ export function AIMentor() {
               placeholder="Ask the mentor…"
               className="min-h-[40px] max-h-[120px] resize-none text-sm"
             />
-            <Button size="icon" onClick={send} disabled={busy || !input.trim()}>
+            <Button size="icon" className="size-11 shrink-0" onClick={send} disabled={busy || !input.trim()} aria-label="Send message">
               {busy ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
             </Button>
           </div>
