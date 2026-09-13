@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import Editor, { type OnMount } from "@monaco-editor/react";
 import { useServerFn } from "@tanstack/react-start";
-import { Play, Loader2, Copy, Download, Upload, Maximize2, Minimize2, Check, Cpu, Timer } from "lucide-react";
+import { Play, Loader2, Copy, Download, Upload, Maximize2, Minimize2, Check, Cpu, Timer, Send } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -95,7 +95,7 @@ function Compiler() {
     setRuntimeMem("");
   };
 
-  const run = async () => {
+  const run = async (submit = false) => {
     setRunning(true);
     setStdout("");
     setStderr("");
@@ -110,7 +110,7 @@ function Compiler() {
       });
       setElapsed(Math.round(performance.now() - start));
       if (!result.ok) {
-        const msg = result.error || "Code runner is unavailable.";
+        const msg = result.error || "The code runner is unavailable. Please try again.";
         setStatus(result.status);
         setStderr(msg);
         toast.error(msg);
@@ -129,11 +129,15 @@ function Compiler() {
       setRuntimeTime(result.time);
       setRuntimeMem(result.memory);
       void awardActivity("code_run", { language: config.label, label: result.status });
+      if (submit && result.statusId === 3) toast.success("Test case submitted successfully");
       if (result.statusId !== 3 && result.statusId !== 0) {
         toast.warning(result.status);
       }
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
+      console.error("Compiler execution failed", e);
+      const msg = e instanceof Error && /timeout|network|fetch/i.test(e.message)
+        ? "The runner took too long to respond. Check your connection and try again."
+        : "Your code could not be run right now. Please try again.";
       toast.error(msg);
       setStderr(msg);
     } finally {
@@ -167,7 +171,7 @@ function Compiler() {
   const onEditorMount: OnMount = (editor, monaco) => {
     // Ctrl/Cmd+Enter to run
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-      run();
+      void run();
     });
     // Ctrl/Cmd+S to save (already autosaved) — noop but stops browser dialog
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
@@ -175,21 +179,21 @@ function Compiler() {
     });
   };
 
-  const editorHeight = fullscreen ? "calc(100vh - 180px)" : "520px";
+  const editorHeight = fullscreen ? "calc(100dvh - 180px)" : "clamp(22rem, 52dvh, 32.5rem)";
 
   return (
     <div className={`space-y-4 ${fullscreen ? "fixed inset-0 z-50 bg-background p-4 overflow-auto" : ""}`}>
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+        <div className="min-w-0">
           <h1 className="font-display text-3xl">Online Compiler</h1>
           <p className="text-sm text-muted-foreground">
             9 languages · IntelliSense · <kbd className="px-1 rounded bg-muted text-xs">⌘/Ctrl</kbd>+
             <kbd className="px-1 rounded bg-muted text-xs">Enter</kbd> to run
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center lg:justify-end">
           <Select value={lang} onValueChange={onLang}>
-            <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="min-h-11 w-full sm:w-[140px]" aria-label="Programming language"><SelectValue /></SelectTrigger>
             <SelectContent>
               {PISTON_LANGUAGES.map((l) => (
                 <SelectItem key={l.id} value={l.id}>{l.label}</SelectItem>
@@ -197,7 +201,7 @@ function Compiler() {
             </SelectContent>
           </Select>
           <Select value={theme} onValueChange={setTheme}>
-            <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="min-h-11 w-full sm:w-[130px]" aria-label="Editor theme"><SelectValue /></SelectTrigger>
             <SelectContent>
               {EDITOR_THEMES.map((t) => (
                 <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>
@@ -205,14 +209,14 @@ function Compiler() {
             </SelectContent>
           </Select>
           <Select value={String(fontSize)} onValueChange={(v) => setFontSize(Number(v))}>
-            <SelectTrigger className="w-[90px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="min-h-11 w-full sm:w-[90px]" aria-label="Editor font size"><SelectValue /></SelectTrigger>
             <SelectContent>
               {[12, 13, 14, 16, 18, 20, 22].map((s) => (
                 <SelectItem key={s} value={String(s)}>{s}px</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={run} disabled={running}>
+          <Button onClick={() => void run()} disabled={running} className="min-h-11 w-full sm:w-auto">
             {running ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Play className="size-4 mr-2" />}
             Run
           </Button>
@@ -223,8 +227,8 @@ function Compiler() {
         <Card className={`${fullscreen ? "" : "lg:col-span-2"} overflow-hidden p-0`}>
           <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/40">
             <span className="text-xs text-muted-foreground font-mono">main.{config.ext}</span>
-            <div className="flex items-center gap-1">
-              <Button size="icon" variant="ghost" title="Upload" onClick={() => fileRef.current?.click()}>
+            <div className="flex items-center gap-0.5 sm:gap-1">
+              <Button size="icon" variant="ghost" className="size-11" title="Upload" aria-label="Upload code file" onClick={() => fileRef.current?.click()}>
                 <Upload className="size-4" />
               </Button>
               <input
@@ -234,13 +238,13 @@ function Compiler() {
                 accept=".py,.js,.ts,.java,.cpp,.c,.go,.rs,.kt,.txt"
                 onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
               />
-              <Button size="icon" variant="ghost" title="Download" onClick={download}>
+              <Button size="icon" variant="ghost" className="size-11" title="Download" aria-label="Download code file" onClick={download}>
                 <Download className="size-4" />
               </Button>
-              <Button size="icon" variant="ghost" title="Copy" onClick={copy}>
+              <Button size="icon" variant="ghost" className="size-11" title="Copy" aria-label="Copy code" onClick={copy}>
                 {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
               </Button>
-              <Button size="icon" variant="ghost" title="Fullscreen" onClick={() => setFullscreen((f) => !f)}>
+              <Button size="icon" variant="ghost" className="size-11" title="Fullscreen" aria-label={fullscreen ? "Exit fullscreen editor" : "Open fullscreen editor"} onClick={() => setFullscreen((f) => !f)}>
                 {fullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
               </Button>
             </div>
@@ -268,10 +272,18 @@ function Compiler() {
             }}
           />
         </Card>
-        <div className="space-y-4">
+        <div className="space-y-4 lg:col-span-1">
           <Card className="p-4">
-            <p className="text-sm font-medium mb-2">Custom input (stdin)</p>
-            <Textarea rows={4} value={stdin} onChange={(e) => setStdin(e.target.value)} placeholder="Optional input…" className="font-mono text-xs" />
+            <label htmlFor="compiler-input" className="mb-2 block text-sm font-medium">Input / test case</label>
+            <Textarea id="compiler-input" rows={4} value={stdin} onChange={(e) => setStdin(e.target.value)} placeholder="Enter the input for this test case…" className="font-mono text-xs" />
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <Button variant="outline" className="min-h-11" onClick={() => void run()} disabled={running}>
+                <Play className="size-4 mr-2" /> Run
+              </Button>
+              <Button className="min-h-11" onClick={() => void run(true)} disabled={running}>
+                <Send className="size-4 mr-2" /> Submit
+              </Button>
+            </div>
           </Card>
           <Card className="p-4">
             <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">

@@ -222,7 +222,7 @@ function Analytics() {
       <Card className="p-5 overflow-hidden">
         <p className="font-display text-lg">Activity heatmap</p>
         <p className="text-xs text-muted-foreground mb-4">Last 6 months of practice</p>
-        <div className="overflow-x-auto pb-1">
+        <div className="max-w-full overflow-x-auto pb-2" role="region" aria-label="Six month activity heatmap" tabIndex={0}>
           <div className="flex gap-[3px] min-w-max">
             {heatmapWeeks.map((week, i) => (
               <div key={i} className="flex flex-col gap-[3px]">
@@ -320,7 +320,7 @@ function Analytics() {
             {topicsDone}/{ROADMAP.length} roadmap topics · {assignmentsDone} assignments done
           </p>
           <Progress value={Math.round((topicsDone / Math.max(ROADMAP.length, 1)) * 100)} />
-          <ul className="mt-4 space-y-1.5 max-h-[150px] overflow-auto text-sm">
+          <ul className="mt-4 space-y-1.5 text-sm">
             {ROADMAP.map((t) => (
               <li key={t.topic} className="flex items-center justify-between gap-2">
                 <span className="truncate">{t.topic}</span>

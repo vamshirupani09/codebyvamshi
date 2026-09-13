@@ -107,11 +107,11 @@ function Assistant() {
       </div>
 
       <Tabs value={agent} onValueChange={(v) => setAgent(v as AgentId)}>
-        <TabsList className="grid grid-cols-4 md:grid-cols-7 w-full">
+        <TabsList className="flex h-auto w-full justify-start overflow-x-auto p-1">
           {AGENTS.map((a) => (
-            <TabsTrigger key={a.id} value={a.id} className="gap-1.5">
+            <TabsTrigger key={a.id} value={a.id} className="min-h-11 shrink-0 gap-1.5 px-3">
               <a.icon className="size-4" />
-              <span className="hidden md:inline">{a.label}</span>
+              <span>{a.label}</span>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -125,12 +125,12 @@ function Assistant() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="p-4 space-y-3">
           <div>
-            <label className="text-sm font-medium">Prompt / Problem</label>
-            <Textarea rows={6} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="e.g. Find the longest substring without repeating characters." />
+            <label htmlFor="assistant-prompt" className="text-sm font-medium">Prompt / Problem</label>
+            <Textarea id="assistant-prompt" rows={6} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="e.g. Find the longest substring without repeating characters." />
           </div>
           <div>
-            <label className="text-sm font-medium">Code / context (optional)</label>
-            <Textarea rows={8} value={context} onChange={(e) => setContext(e.target.value)} placeholder="Paste code or extra context here…" className="font-mono text-xs" />
+            <label htmlFor="assistant-context" className="text-sm font-medium">Code / context (optional)</label>
+            <Textarea id="assistant-context" rows={8} value={context} onChange={(e) => setContext(e.target.value)} placeholder="Paste code or extra context here…" className="font-mono text-xs" />
           </div>
           <Button onClick={ask} disabled={busy} className="w-full">
             {busy ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Send className="size-4 mr-2" />}

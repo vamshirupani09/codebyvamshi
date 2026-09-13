@@ -53,7 +53,7 @@ function Companies() {
             <Search className="size-4 absolute left-2.5 top-2.5 text-muted-foreground" />
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search company…" className="pl-8" maxLength={40} />
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-1 gap-1.5 max-h-[28rem] overflow-y-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5 max-h-[28rem] overflow-y-auto">
             {filtered.map((c) => (
               <button
                 key={c.slug}
@@ -83,13 +83,13 @@ function Companies() {
           </div>
 
           <Tabs defaultValue="process">
-            <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full">
-              <TabsTrigger value="process">Process</TabsTrigger>
-              <TabsTrigger value="dsa">DSA</TabsTrigger>
-              <TabsTrigger value="coding">Coding</TabsTrigger>
-              <TabsTrigger value="hr">HR</TabsTrigger>
-              <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
-              <TabsTrigger value="faq">FAQ</TabsTrigger>
+            <TabsList className="flex h-auto w-full justify-start overflow-x-auto p-1">
+              <TabsTrigger value="process" className="min-h-10 shrink-0">Process</TabsTrigger>
+              <TabsTrigger value="dsa" className="min-h-10 shrink-0">DSA</TabsTrigger>
+              <TabsTrigger value="coding" className="min-h-10 shrink-0">Coding</TabsTrigger>
+              <TabsTrigger value="hr" className="min-h-10 shrink-0">HR</TabsTrigger>
+              <TabsTrigger value="roadmap" className="min-h-10 shrink-0">Roadmap</TabsTrigger>
+              <TabsTrigger value="faq" className="min-h-10 shrink-0">FAQ</TabsTrigger>
             </TabsList>
 
             <TabsContent value="process" className="pt-4 space-y-4">

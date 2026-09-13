@@ -395,11 +395,11 @@ function ResumeChecker() {
               {/* Tabbed insights */}
               <Card className="p-2">
                 <Tabs defaultValue="actions">
-                  <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4">
-                    <TabsTrigger value="actions">Priorities</TabsTrigger>
-                    <TabsTrigger value="strengths">S / W</TabsTrigger>
-                    <TabsTrigger value="keywords">Keywords</TabsTrigger>
-                    <TabsTrigger value="rewrites">Rewrites</TabsTrigger>
+                  <TabsList className="flex h-auto w-full justify-start overflow-x-auto p-1">
+                    <TabsTrigger value="actions" className="min-h-10 shrink-0">Priorities</TabsTrigger>
+                    <TabsTrigger value="strengths" className="min-h-10 shrink-0">S / W</TabsTrigger>
+                    <TabsTrigger value="keywords" className="min-h-10 shrink-0">Keywords</TabsTrigger>
+                    <TabsTrigger value="rewrites" className="min-h-10 shrink-0">Rewrites</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="actions" className="p-4 space-y-4">
