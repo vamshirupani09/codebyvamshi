@@ -48,7 +48,7 @@ function loadPersisted(): Persisted {
 
 function Compiler() {
   const [lang, setLang] = useState<LangId>("python");
-  const config = PISTON_LANGUAGES.find((l) => l.id === lang)!;
+  const config = PISTON_LANGUAGES.find((l) => l.id === lang) ?? PISTON_LANGUAGES[0];
   const [code, setCode] = useState<string>(config.starter);
   const [stdin, setStdin] = useState("");
   const [stdout, setStdout] = useState("");
@@ -83,7 +83,8 @@ function Compiler() {
   }, [code, lang]);
 
   const onLang = (id: string) => {
-    const cfg = PISTON_LANGUAGES.find((l) => l.id === id)!;
+    const cfg = PISTON_LANGUAGES.find((l) => l.id === id);
+    if (!cfg) return;
     setLang(cfg.id);
     const saved = loadPersisted();
     setCode(saved[cfg.id] ?? cfg.starter);
