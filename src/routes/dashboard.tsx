@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ROADMAP } from "@/lib/dsa-data";
+import { cachedFetch } from "@/lib/shared-data";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => seoHead({ path: "/dashboard", title: "Your Learning Dashboard | Codex", description: "See your DSA progress, pending assignments, streaks and quick links to the compiler, AI assistant and analytics in one dashboard.", noindex: true }),
@@ -24,19 +25,23 @@ function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
-    (async () => {
+    let alive = true;
+    void cachedFetch(`dashboard:${user.id}`, async () => {
       const [{ data: prog }, { data: ac }, { count: aTotal }] = await Promise.all([
         supabase.from("dsa_progress").select("topic,completed").eq("user_id", user.id).eq("completed", true),
         supabase.from("assignment_completions").select("id", { count: "exact" }).eq("user_id", user.id),
         supabase.from("assignments").select("id", { count: "exact", head: true }),
       ]);
-      setStats({
+      return {
         done: prog?.length ?? 0,
         total: ROADMAP.length,
         assignmentsDone: ac?.length ?? 0,
         assignmentsTotal: aTotal ?? 0,
-      });
-    })();
+      };
+    }).then((s) => alive && setStats(s));
+    return () => {
+      alive = false;
+    };
   }, [user]);
 
   const pct = Math.round((stats.done / stats.total) * 100);

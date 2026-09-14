@@ -39,6 +39,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AIMentor } from "@/components/AIMentor";
 import type { UserStats } from "@/lib/gamification";
+import { cachedFetch, invalidateCache } from "@/lib/shared-data";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -104,18 +105,26 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("notifications")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(15)
-      .then(({ data }) => data && setNotifs(data));
-    supabase
-      .from("user_stats" as never)
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => data && setStats(data as unknown as UserStats));
+    let alive = true;
+    void cachedFetch(`notifications:${user.id}`, async () => {
+      const { data } = await supabase
+        .from("notifications")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(15);
+      return data ?? [];
+    }).then((data) => alive && setNotifs(data));
+    void cachedFetch(`user_stats:${user.id}`, async () => {
+      const { data } = await supabase
+        .from("user_stats" as never)
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return (data ?? null) as unknown as UserStats | null;
+    }).then((data) => alive && data && setStats(data));
+    return () => {
+      alive = false;
+    };
   }, [user]);
 
 
@@ -125,6 +134,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
   const markAllRead = async () => {
     if (!user) return;
     await supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
+    invalidateCache(`notifications:${user.id}`);
     setNotifs((p) => p.map((n) => ({ ...n, read: true })));
   };
 
