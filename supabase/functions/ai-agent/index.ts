@@ -65,7 +65,8 @@ Deno.serve(async (req) => {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: FAST_AGENTS.has(agent) ? "google/gemini-3.8-flash" : "google/gemini-3-flash-preview",
+        ...(FAST_AGENTS.has(agent) ? { service_tier: "priority" } : {}),
         messages,
         stream: !wantsJson,
       }),
