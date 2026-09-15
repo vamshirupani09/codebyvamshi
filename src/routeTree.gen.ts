@@ -15,6 +15,7 @@ import { Route as ResumeCheckerRouteImport } from './routes/resume-checker'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PlacementRouteImport } from './routes/placement'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as InterviewRouteImport } from './routes/interview'
@@ -59,6 +60,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortfolioRoute = PortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlacementRoute = PlacementRouteImport.update({
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/interview': typeof InterviewRoute
   '/mcp': typeof McpRoute
   '/placement': typeof PlacementRoute
+  '/portfolio': typeof PortfolioRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/interview': typeof InterviewRoute
   '/mcp': typeof McpRoute
   '/placement': typeof PlacementRoute
+  '/portfolio': typeof PortfolioRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/interview': typeof InterviewRoute
   '/mcp': typeof McpRoute
   '/placement': typeof PlacementRoute
+  '/portfolio': typeof PortfolioRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/interview'
     | '/mcp'
     | '/placement'
+    | '/portfolio'
     | '/profile'
     | '/reset-password'
     | '/resources'
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
     | '/interview'
     | '/mcp'
     | '/placement'
+    | '/portfolio'
     | '/profile'
     | '/reset-password'
     | '/resources'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/interview'
     | '/mcp'
     | '/placement'
+    | '/portfolio'
     | '/profile'
     | '/reset-password'
     | '/resources'
@@ -294,6 +306,7 @@ export interface RootRouteChildren {
   InterviewRoute: typeof InterviewRoute
   McpRoute: typeof McpRoute
   PlacementRoute: typeof PlacementRoute
+  PortfolioRoute: typeof PortfolioRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ResourcesRoute: typeof ResourcesRoute
@@ -348,6 +361,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portfolio': {
+      id: '/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof PortfolioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/placement': {
@@ -470,6 +490,7 @@ const rootRouteChildren: RootRouteChildren = {
   InterviewRoute: InterviewRoute,
   McpRoute: McpRoute,
   PlacementRoute: PlacementRoute,
+  PortfolioRoute: PortfolioRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ResourcesRoute: ResourcesRoute,
