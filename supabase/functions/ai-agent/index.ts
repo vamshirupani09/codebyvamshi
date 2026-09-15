@@ -29,8 +29,12 @@ const AGENT_PROMPTS: Record<string, string> = {
     "You are an interview evaluator. Given the interview config and full transcript, produce a final report. Return STRICT JSON only, no markdown fences: {\"overall_score\":number,\"verdict\":string,\"categories\":[{\"name\":string,\"score\":number,\"comment\":string}],\"strengths\":[string],\"improvements\":[string],\"action_plan\":[string],\"summary\":string}. overall_score is 0-100; category scores are 0-100.",
   repo_review:
     "You are the Repository Review Agent. You receive GitHub repository metadata, language breakdown, a file listing and the README. Evaluate it like a hiring manager reviewing a candidate's portfolio project. Return STRICT JSON only, no markdown fences: {\"health_score\":number,\"verdict\":string,\"summary\":string,\"categories\":[{\"name\":string,\"score\":number,\"comment\":string}],\"strengths\":[string],\"issues\":[{\"severity\":\"low\"|\"medium\"|\"high\",\"title\":string,\"detail\":string,\"fix\":string}],\"readme_feedback\":[string],\"readme_suggestion\":string,\"recruiter_pitch\":string,\"next_steps\":[string]}. health_score is 0-100. categories MUST cover: Documentation, Code Structure, Activity & Maintenance, Discoverability, Portfolio Impact — each scored 0-100. readme_suggestion is a complete improved README in markdown (use \\n newlines) tailored to this repo.",
-
+  portfolio:
+    "You are the Portfolio Generator Agent. You receive a candidate's resume analysis, GitHub profile, repositories and any repo reviews. Write portfolio website copy in the candidate's voice — concrete, specific, no filler or invented employers. Return STRICT JSON only, no markdown fences: {\"name\":string,\"headline\":string,\"tagline\":string,\"about\":string,\"skills\":[{\"category\":string,\"items\":[string]}],\"projects\":[{\"name\":string,\"description\":string,\"tech\":[string],\"highlights\":[string],\"url\":string|null}],\"experience\":[{\"role\":string,\"org\":string,\"period\":string,\"points\":[string]}],\"education\":[{\"degree\":string,\"org\":string,\"period\":string}],\"achievements\":[string],\"strengths\":[string],\"next_steps\":[string],\"recruiter_pitch\":string,\"hiring_summary\":string}. Limits: about 60-90 words; 3-5 skill categories with up to 8 items each; up to 6 projects with up to 3 highlights each; recruiter_pitch one sentence; hiring_summary 40-60 words. Use only facts present in the input; leave arrays empty rather than inventing experience or education.",
 };
+
+// Agents tuned for latency over depth.
+const FAST_AGENTS = new Set(["portfolio"]);
 
 
 Deno.serve(async (req) => {
