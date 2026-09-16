@@ -77,22 +77,29 @@ async function tryProvider(
   body: object,
 ): Promise<RunCodeResult | { retry: true; reason: string }> {
   let res: Response;
+  let timedOut = false;
   try {
     const ctrl = new AbortController();
-    const timeout = setTimeout(() => ctrl.abort(), 25_000);
-    res = await fetch(p.url, {
-      method: "POST",
-      headers: { "content-type": "application/json", ...p.headers },
-      body: JSON.stringify(body),
-      signal: ctrl.signal,
-    });
-    clearTimeout(timeout);
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      ctrl.abort();
+    }, 20_000);
+    try {
+      res = await fetch(p.url, {
+        method: "POST",
+        headers: { "content-type": "application/json", ...p.headers },
+        body: JSON.stringify(body),
+        signal: ctrl.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
   } catch {
-    return { retry: true, reason: `${p.name} unreachable` };
+    return { retry: true, reason: timedOut ? `${p.name} timed out` : `${p.name} unreachable` };
   }
 
   if (!res.ok) {
-    if (res.status === 401 || res.status === 403 || res.status === 429) {
+    if (res.status === 401 || res.status === 403 || res.status === 429 || res.status >= 500) {
       return { retry: true, reason: `${p.name} ${res.status}` };
     }
     const text = await res.text().catch(() => "");
@@ -106,6 +113,9 @@ async function tryProvider(
     return { retry: true, reason: `${p.name} bad response` };
   }
 }
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 
 export const runCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
