@@ -20,6 +20,7 @@ import {
   Target,
   Github,
   Trophy,
+  Briefcase,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -53,6 +54,7 @@ const nav = [
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/resume-checker", label: "Resume Checker", icon: FileScan },
   { to: "/github", label: "GitHub", icon: Github },
+  { to: "/portfolio", label: "Portfolio", icon: Briefcase },
   { to: "/resources", label: "Resources", icon: BookOpen },
   { to: "/profile", label: "Profile", icon: UserIcon },
 ] as const;
