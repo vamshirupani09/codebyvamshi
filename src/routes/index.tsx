@@ -157,7 +157,7 @@ function Landing() {
           <div className="size-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground">
             <Sparkles className="size-4" />
           </div>
-          <span className="font-display text-2xl">Codex</span>
+             <span className="font-display text-2xl">Codexa</span>
         </div>
 
         <div className="relative z-10 max-w-md">
