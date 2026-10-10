@@ -84,41 +84,34 @@ async function tryProvider(
   body: object,
   timeoutMs: number,
 ): Promise<RunCodeResult | { retry: true; reason: string }> {
-  let res: Response;
   let timedOut = false;
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => {
+    timedOut = true;
+    ctrl.abort();
+  }, timeoutMs);
   try {
-    const ctrl = new AbortController();
-    const timeout = setTimeout(() => {
-      timedOut = true;
-      ctrl.abort();
-    }, timeoutMs);
-    try {
-      res = await fetch(p.url, {
-        method: "POST",
-        headers: { "content-type": "application/json", ...p.headers },
-        body: JSON.stringify(body),
-        signal: ctrl.signal,
-      });
-    } finally {
-      clearTimeout(timeout);
-    }
-  } catch {
-    return { retry: true, reason: timedOut ? `${p.name} timed out` : `${p.name} unreachable` };
-  }
+    const res = await fetch(p.url, {
+      method: "POST",
+      headers: { "content-type": "application/json", ...p.headers },
+      body: JSON.stringify(body),
+      signal: ctrl.signal,
+    });
 
-  if (!res.ok) {
-    if (res.status === 401 || res.status === 403 || res.status === 429 || res.status >= 500) {
-      return { retry: true, reason: `${p.name} ${res.status}` };
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403 || res.status === 429 || res.status >= 500) {
+        return { retry: true, reason: `${p.name} ${res.status}` };
+      }
+      const text = await res.text().catch(() => "");
+      return runnerError(`Runner error ${res.status}: ${text.slice(0, 200)}`);
     }
-    const text = await res.text().catch(() => "");
-    return runnerError(`Runner error ${res.status}: ${text.slice(0, 200)}`);
-  }
 
-  try {
     const j = (await res.json()) as Judge0Response;
     return formatJudge0(j);
   } catch {
-    return { retry: true, reason: `${p.name} bad response` };
+    return { retry: true, reason: timedOut ? `${p.name} timed out` : `${p.name} unreachable or returned a bad response` };
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
