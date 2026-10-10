@@ -9,6 +9,7 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CodeReviewPanel } from "@/components/CodeReviewPanel";
+import { explainNetworkFailure, explainRunFailure, type FriendlyError } from "@/lib/compiler-errors";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,6 +56,8 @@ function Compiler() {
   const [stderr, setStderr] = useState("");
   const [status, setStatus] = useState<string>("");
   const [running, setRunning] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [friendlyError, setFriendlyError] = useState<FriendlyError | null>(null);
   const [elapsed, setElapsed] = useState<number | null>(null);
   const [runtimeTime, setRuntimeTime] = useState<string>("");
   const [runtimeMem, setRuntimeMem] = useState<string>("");
@@ -63,11 +66,16 @@ function Compiler() {
   const [fullscreen, setFullscreen] = useState(false);
   const [copied, setCopied] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const lastRunRef = useRef<{
+    submit: boolean;
+    data: { language_id: number; source_code: string; stdin: string };
+  } | null>(null);
   const runFn = useServerFn(runCode);
 
   useEffect(() => {
     const saved = loadPersisted();
-    if (saved[lang]) setCode(saved[lang]!);
+    const savedCode = saved[lang];
+    if (savedCode) setCode(savedCode);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -91,30 +99,49 @@ function Compiler() {
     setStdout("");
     setStderr("");
     setStatus("");
+    setFriendlyError(null);
     setElapsed(null);
     setRuntimeTime("");
     setRuntimeMem("");
   };
 
-  const run = async (submit = false) => {
+  const run = async (submit = false, retry = false) => {
+    const previous = lastRunRef.current;
+    const request = retry && previous
+      ? previous.data
+      : { language_id: config.judge0, source_code: code, stdin };
+    const shouldSubmit = retry && previous ? previous.submit : submit;
+    lastRunRef.current = { data: request, submit: shouldSubmit };
     setRunning(true);
+    setProgress(8);
     setStdout("");
     setStderr("");
     setStatus("");
+    setFriendlyError(null);
     setElapsed(null);
     setRuntimeTime("");
     setRuntimeMem("");
+    const progressTimer = setInterval(() => {
+      setProgress((current) => Math.min(current + 2, 92));
+    }, 250);
     const start = performance.now();
     try {
       const result = await runFn({
-        data: { language_id: config.judge0, source_code: code, stdin },
+        data: request,
       });
       setElapsed(Math.round(performance.now() - start));
       if (!result.ok) {
         const msg = result.error || "The code runner is unavailable. Please try again.";
         setStatus(result.status);
         setStderr(msg);
-        toast.error(msg);
+        const explanation = explainRunFailure({
+          statusId: result.statusId,
+          status: result.status,
+          runnerError: result.error,
+        }) ?? explainNetworkFailure(new Error(msg));
+        setFriendlyError(explanation);
+        setProgress(100);
+        toast.error(explanation.title);
         return;
       }
       setStdout(result.stdout);
@@ -127,22 +154,33 @@ function Compiler() {
       ].filter(Boolean);
       setStderr(errParts.join("\n\n"));
       setStatus(result.status);
+      setFriendlyError(explainRunFailure({
+        statusId: result.statusId,
+        status: result.status,
+        compileOutput: result.compile_output,
+        stderr: result.stderr,
+        message: result.message,
+      }));
       setRuntimeTime(result.time);
       setRuntimeMem(result.memory);
       void awardActivity("code_run", { language: config.label, label: result.status });
-      if (submit && result.statusId === 3) toast.success("Test case submitted successfully");
+      if (shouldSubmit && result.statusId === 3) toast.success("Test case submitted successfully");
       if (result.statusId !== 3 && result.statusId !== 0) {
         toast.warning(result.status);
       }
+      setProgress(100);
     } catch (e: unknown) {
       console.error("Compiler execution failed", e);
-      const msg = e instanceof Error && /timeout|network|fetch/i.test(e.message)
-        ? "The runner took too long to respond. Check your connection and try again."
-        : "Your code could not be run right now. Please try again.";
-      toast.error(msg);
-      setStderr(msg);
+      const explanation = explainNetworkFailure(e);
+      setFriendlyError(explanation);
+      setStderr(e instanceof Error ? e.message : "");
+      setProgress(100);
+      toast.error(explanation.title);
     } finally {
+      clearInterval(progressTimer);
+      await new Promise((resolve) => setTimeout(resolve, 180));
       setRunning(false);
+      setProgress(0);
     }
   };
 
@@ -296,6 +334,25 @@ function Compiler() {
                 {elapsed != null && <span>·{elapsed}ms rt</span>}
               </div>
             </div>
+            {running && (
+              <div className="mb-3 space-y-1.5" aria-live="polite">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Running your code…</span>
+                  <span>{Math.round(progress)}%</span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    role="progressbar"
+                    aria-label="Code execution progress"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={Math.round(progress)}
+                    className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+            )}
             {running && !stdout && !stderr ? (
               <div className="flex items-center gap-2 text-xs text-muted-foreground py-6">
                 <Loader2 className="size-3.5 animate-spin" /> Executing on remote sandbox…
@@ -310,6 +367,23 @@ function Compiler() {
                 <p className="text-sm font-medium mt-3 mb-2 text-destructive">Errors</p>
                 <pre className="text-xs bg-destructive/10 text-destructive rounded-md p-3 max-h-[200px] overflow-auto whitespace-pre-wrap font-mono">{stderr}</pre>
               </>
+            )}
+            {friendlyError && (
+              <div role="alert" className="mt-3 rounded-md border border-destructive/30 bg-destructive/5 p-3">
+                <p className="text-sm font-semibold text-destructive">{friendlyError.title}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{friendlyError.hint}</p>
+                {friendlyError.retryable && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 min-h-11"
+                    onClick={() => void run(false, true)}
+                    disabled={running}
+                  >
+                    <Play className="mr-2 size-4" /> Run again
+                  </Button>
+                )}
+              </div>
             )}
           </Card>
           <CodeReviewPanel code={code} language={config.label ?? lang} />

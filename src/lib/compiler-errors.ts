@@ -21,6 +21,13 @@ export function explainRunFailure(args: {
   const { statusId, status = "", compileOutput = "", stderr = "", message = "", runnerError } = args;
 
   if (runnerError) {
+    if (/timeout|timed out/i.test(runnerError)) {
+      return {
+        title: "The execution service timed out",
+        hint: "The runner did not respond within the time limit. Try again; if this code consistently times out, check for a long-running loop.",
+        retryable: true,
+      };
+    }
     return {
       title: "The code runner is unavailable",
       hint: "This is a temporary problem with the execution service, not your code. Try running again in a few seconds.",
@@ -31,6 +38,22 @@ export function explainRunFailure(args: {
   if (statusId === 3) return null;
 
   const raw = `${compileOutput}\n${stderr}\n${message}`.toLowerCase();
+
+  if (statusId === 1 || statusId === 2) {
+    return {
+      title: "Your run is still being processed",
+      hint: "The runner has not returned a final result yet. Run it again in a moment.",
+      retryable: true,
+    };
+  }
+
+  if (statusId === 4) {
+    return {
+      title: "The program ran, but the output did not match",
+      hint: "Compare the output with the expected result and check edge cases in your input.",
+      retryable: false,
+    };
+  }
 
   if (statusId === 6) {
     return {

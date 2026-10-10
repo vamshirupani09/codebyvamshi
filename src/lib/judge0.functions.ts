@@ -31,6 +31,13 @@ type RunCodeResult = {
   error?: string;
 };
 
+const PROVIDER_TIMEOUT_MS = 8_000;
+const TOTAL_RUN_TIMEOUT_MS = 12_000;
+const RUN_CACHE_TTL_MS = 15_000;
+const RUN_CACHE_MAX_ENTRIES = 100;
+
+const runCache = new Map<string, { expiresAt: number; result: RunCodeResult }>();
+
 const b64 = (s: string) => Buffer.from(s, "utf-8").toString("base64");
 const unb64 = (s: string | null | undefined) =>
   s ? Buffer.from(s, "base64").toString("utf-8") : "";
@@ -75,6 +82,7 @@ type Provider = {
 async function tryProvider(
   p: Provider,
   body: object,
+  timeoutMs: number,
 ): Promise<RunCodeResult | { retry: true; reason: string }> {
   let res: Response;
   let timedOut = false;
@@ -83,7 +91,7 @@ async function tryProvider(
     const timeout = setTimeout(() => {
       timedOut = true;
       ctrl.abort();
-    }, 20_000);
+    }, timeoutMs);
     try {
       res = await fetch(p.url, {
         method: "POST",
@@ -131,7 +139,17 @@ export const runCode = createServerFn({ method: "POST" })
       stdin: typeof i.stdin === "string" ? i.stdin : "",
     };
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const inputKey = JSON.stringify([context.userId, data.language_id, data.source_code, data.stdin]);
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(inputKey));
+    const cacheKey = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+    const now = Date.now();
+    for (const [key, entry] of runCache) {
+      if (entry.expiresAt <= now) runCache.delete(key);
+    }
+    const cached = runCache.get(cacheKey);
+    if (cached && cached.expiresAt > now) return { ...cached.result };
+
     const key = process.env.RAPIDAPI_JUDGE0_KEY;
 
     const providers: Provider[] = [];
@@ -160,13 +178,33 @@ export const runCode = createServerFn({ method: "POST" })
     };
 
     const reasons: string[] = [];
+    const runStartedAt = Date.now();
     for (const p of providers) {
-      const r = await tryProvider(p, body);
+      const remainingMs = TOTAL_RUN_TIMEOUT_MS - (Date.now() - runStartedAt);
+      if (remainingMs <= 0) {
+        reasons.push(`${p.name} skipped (time budget exhausted)`);
+        break;
+      }
+      const r = await tryProvider(p, body, Math.min(PROVIDER_TIMEOUT_MS, remainingMs));
       if ("retry" in r) {
         reasons.push(r.reason);
         continue;
       }
+      if (r.ok && r.statusId !== 1 && r.statusId !== 2) {
+        if (runCache.size >= RUN_CACHE_MAX_ENTRIES) {
+          const oldestKey = runCache.keys().next().value;
+          if (oldestKey) runCache.delete(oldestKey);
+        }
+        runCache.set(cacheKey, { expiresAt: Date.now() + RUN_CACHE_TTL_MS, result: r });
+      }
       return r;
+    }
+
+    if (reasons.length > 0 && reasons.every((reason) => /timed out|time budget exhausted/i.test(reason))) {
+      return {
+        ...runnerError("Execution timed out. The runner did not respond within the time limit. Please try again."),
+        status: "Execution timed out",
+      };
     }
 
     return runnerError(
