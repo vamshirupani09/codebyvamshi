@@ -73,7 +73,7 @@ export function explainRunFailure(args: {
     };
   }
 
-  if (statusId === 11 || raw.includes("out of memory") || raw.includes("memory limit")) {
+  if (raw.includes("out of memory") || raw.includes("memory limit")) {
     return {
       title: "Your program used too much memory",
       hint: "Reduce the size of arrays or recursion depth, or free data you no longer need.",
