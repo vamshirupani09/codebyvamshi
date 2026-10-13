@@ -107,7 +107,7 @@ function Compiler() {
   };
 
   const run = async (submit = false, retry = false) => {
-    if (submit && !retry) setReviewRequestId((current) => current + 1);
+    if (!retry) setReviewRequestId((current) => current + 1);
     const previous = lastRunRef.current;
     const request = retry && previous
       ? previous.data
