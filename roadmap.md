@@ -4,6 +4,7 @@
 - [x] Add mobile bottom navigation
 - [x] Test login, dashboard, and compiler on phone, tablet, laptop and desktop
 - [x] Add Portfolio to navigation and publish the AI portfolio agent
-- [ ] Wire compiler failure explanations and retry controls into run results
-- [ ] Shorten runner timeouts, cache identical runs briefly per user, and show live execution progress
+- [ ] Automatically review each compiler submission for bugs, readability, naming, optimization and security
+- [x] Wire compiler failure explanations and retry controls into run results
+- [x] Shorten runner timeouts, cache identical runs briefly per user, and show live execution progress
 - [ ] Verify wrong-code and timeout messages in the preview

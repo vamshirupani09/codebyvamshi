@@ -58,6 +58,7 @@ function Compiler() {
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [friendlyError, setFriendlyError] = useState<FriendlyError | null>(null);
+  const [reviewRequestId, setReviewRequestId] = useState(0);
   const [elapsed, setElapsed] = useState<number | null>(null);
   const [runtimeTime, setRuntimeTime] = useState<string>("");
   const [runtimeMem, setRuntimeMem] = useState<string>("");
@@ -106,6 +107,7 @@ function Compiler() {
   };
 
   const run = async (submit = false, retry = false) => {
+    if (submit && !retry) setReviewRequestId((current) => current + 1);
     const previous = lastRunRef.current;
     const request = retry && previous
       ? previous.data
@@ -386,7 +388,7 @@ function Compiler() {
               </div>
             )}
           </Card>
-          <CodeReviewPanel code={code} language={config.label ?? lang} />
+          <CodeReviewPanel code={code} language={config.label ?? lang} submissionId={reviewRequestId} />
         </div>
 
       </div>
