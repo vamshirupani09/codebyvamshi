@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ShieldCheck, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
@@ -31,11 +31,12 @@ const SEVERITY: Record<string, string> = {
   low: "text-muted-foreground",
 };
 
-export function CodeReviewPanel({ code, language }: { code: string; language: string }) {
+export function CodeReviewPanel({ code, language, submissionId = 0 }: { code: string; language: string; submissionId?: number }) {
   const [review, setReview] = useState<Review | null>(null);
   const [busy, setBusy] = useState(false);
+  const lastAutoReviewRef = useRef(0);
 
-  const run = async () => {
+  const run = useCallback(async () => {
     if (!code.trim()) return toast.error("Write some code first");
     setBusy(true);
     setReview(null);
@@ -52,7 +53,13 @@ export function CodeReviewPanel({ code, language }: { code: string; language: st
     } finally {
       setBusy(false);
     }
-  };
+  }, [code, language]);
+
+  useEffect(() => {
+    if (submissionId === 0 || submissionId === lastAutoReviewRef.current) return;
+    lastAutoReviewRef.current = submissionId;
+    void run();
+  }, [run, submissionId]);
 
   return (
     <Card className="p-4 space-y-3">
@@ -60,9 +67,15 @@ export function CodeReviewPanel({ code, language }: { code: string; language: st
         <p className="text-sm font-medium flex items-center gap-2"><ShieldCheck className="size-4" /> AI Code Review</p>
         <Button size="sm" variant="outline" onClick={run} disabled={busy}>
           {busy ? <Loader2 className="size-3.5 mr-2 animate-spin" /> : null}
-          Review code
+          {busy ? "Reviewing…" : review ? "Review again" : "Review code"}
         </Button>
       </div>
+
+      {busy && (
+        <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Loader2 className="size-3.5 animate-spin" /> Analyzing bugs, readability, naming, optimization and security…
+        </p>
+      )}
 
       {!review && !busy && (
         <p className="text-xs text-muted-foreground">
